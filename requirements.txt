@@ -1,0 +1,7 @@
+Django>=5.0,<6.0
+django-environ
+celery
+redis
+django-two-factor-auth
+django-phonenumber-field[phonenumbers]
+django-otp
