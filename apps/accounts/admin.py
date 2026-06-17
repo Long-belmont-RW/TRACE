@@ -17,10 +17,16 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'role', 'password1', 'password2'),
+            'fields': ('email', 'role'),
         }),
     )
     search_fields = ['email', 'role']
     ordering = ['email']
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change and hasattr(obj, '_temp_password'):
+            from .services import send_onboarding_email
+            send_onboarding_email(obj, obj._temp_password)
 
 admin.site.register(User, CustomUserAdmin)

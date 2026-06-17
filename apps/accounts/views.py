@@ -1,7 +1,13 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import RedirectView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import RedirectView, TemplateView
 from django.urls import reverse, NoReverseMatch
 from .services import get_dashboard_url_for_user
+
+class SuperadminDashboardView(UserPassesTestMixin, TemplateView):
+    template_name = 'accounts/superadmin_dashboard.html'
+
+    def test_func(self):
+        return self.request.user.is_superuser
 
 class LoginSuccessRedirectView(LoginRequiredMixin, RedirectView):
     permanent = False
