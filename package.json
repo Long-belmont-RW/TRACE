@@ -1,0 +1,29 @@
+{
+  "name": "trace",
+  "version": "1.0.0",
+  "description": "A Django project.",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "npx @tailwindcss/cli -i ./static/src/input.css -o ./static/css/output.css",
+    "watch:css": "npx @tailwindcss/cli -i ./static/src/input.css -o ./static/css/output.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Long-belmont-RW/TRACE.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Long-belmont-RW/TRACE/issues"
+  },
+  "homepage": "https://github.com/Long-belmont-RW/TRACE#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.1",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.1"
+  }
+}

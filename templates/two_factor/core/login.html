@@ -1,0 +1,330 @@
+{% load i18n two_factor_tags %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>TRACE | Login</title>
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#e5eeff",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#ddc39d",
+                        "on-tertiary-container": "#a38c6a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "surface-tint": "#545f73",
+                        "surface": "#f8f9ff",
+                        "inverse-surface": "#213145",
+                        "secondary-fixed": "#d5e3fd",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "on-primary-container": "#8590a6",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-background": "#0b1c30",
+                        "secondary-container": "#d5e3fd",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9ff",
+                        "primary-fixed": "#d8e3fb",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#271902",
+                        "on-surface-variant": "#45474c",
+                        "surface-container-high": "#dce9ff",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#fadfb8",
+                        "on-primary-fixed": "#111c2d",
+                        "secondary": "#515f74",
+                        "tertiary": "#1e1200",
+                        "primary-container": "#1e293b",
+                        "tertiary-container": "#35260c",
+                        "inverse-primary": "#bcc7de",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "outline-variant": "#c5c6cd",
+                        "outline": "#75777d",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-fixed-dim": "#bcc7de",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#091426",
+                        "on-surface": "#0b1c30",
+                        "surface-container-low": "#eff4ff",
+                        "on-tertiary-fixed-variant": "#564427",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#57657b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-lg": "1.5rem",
+                        "sidebar-width": "260px",
+                        "container-padding": "2rem",
+                        "gutter": "1.5rem",
+                        "stack-sm": "0.5rem",
+                        "stack-md": "1rem"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-md-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "headline-md-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Professional slate-50 feel */
+        }
+    </style>
+    {{ form.media }}
+</head>
+<body class="flex flex-col min-h-screen items-center justify-center p-gutter">
+    <!-- Login Container -->
+    <main class="w-full max-w-[420px] animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <!-- Branding & Logo Area -->
+        <div class="flex flex-col items-center mb-8">
+            <div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center shadow-md mb-4">
+                <span class="material-symbols-outlined text-on-primary !text-4xl" data-icon="account_balance" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+            </div>
+            <h1 class="font-display-lg text-display-lg text-primary tracking-tighter">TRACE</h1>
+            <p class="font-label-md text-label-md text-on-primary-container uppercase tracking-widest text-center">Tracking &amp; Reporting Automated Court Events</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-4 space-y-2 w-full">
+                {% for message in messages %}
+                    <div class="p-4 rounded-md text-sm font-medium
+                        {% if message.tags == 'error' %}bg-error-container text-on-error-container border border-error
+                        {% elif message.tags == 'success' %}bg-secondary-container text-on-secondary-container border border-secondary
+                        {% else %}bg-primary-container text-on-primary-container border border-primary{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Login Card -->
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-8 md:p-10 w-full">
+            <div class="mb-8">
+                {% if wizard.steps.current == 'auth' %}
+                    <h2 class="font-headline-md text-headline-md text-on-surface mb-1">Welcome Back</h2>
+                    <p class="font-body-md text-body-md text-on-surface-variant">Sign in to continue to the judicial dashboard.</p>
+                {% elif wizard.steps.current == 'token' %}
+                    <h2 class="font-headline-md text-headline-md text-on-surface mb-1">Verification</h2>
+                    <p class="font-body-md text-body-md text-on-surface-variant">{{ device|as_verbose_action }}</p>
+                {% elif wizard.steps.current == 'backup' %}
+                    <h2 class="font-headline-md text-headline-md text-on-surface mb-1">Backup Token</h2>
+                    <p class="font-body-md text-body-md text-on-surface-variant">Use this form for entering backup tokens for logging in. Please enter one of these backup tokens to login to your account.</p>
+                {% endif %}
+            </div>
+
+            <form action="" method="post" class="space-y-6 w-full">
+                {% csrf_token %}
+                {{ wizard.management_form }}
+
+                {% if wizard.steps.current == 'auth' %}
+                    <!-- Email/Username -->
+                    <div class="space-y-1.5 w-full">
+                        <label class="font-label-md text-label-md text-on-surface-variant uppercase" for="{{ wizard.form.username.id_for_label }}">Username or Email</label>
+                        <div class="relative group w-full">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+                                <span class="material-symbols-outlined !text-[20px]" data-icon="person">person</span>
+                            </div>
+                            <input class="block w-full pl-10 pr-3 py-3 bg-surface border border-outline-variant rounded-lg text-on-surface font-body-md placeholder-outline focus:ring-2 focus:ring-primary focus:border-primary transition-all {% if wizard.form.username.errors %}border-error focus:border-error focus:ring-error{% endif %}" 
+                                   id="{{ wizard.form.username.id_for_label|default:'id_auth-username' }}" 
+                                   name="{{ wizard.form.username.html_name|default:'auth-username' }}" 
+                                   placeholder="Enter your credentials" 
+                                   required 
+                                   type="text"/>
+                        </div>
+                        {% if wizard.form.username.errors %}
+                            <div class="text-error font-body-md text-sm mt-1">{{ wizard.form.username.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password -->
+                    <div class="space-y-1.5 w-full">
+                        <div class="flex justify-between items-center">
+                            <label class="font-label-md text-label-md text-on-surface-variant uppercase" for="{{ wizard.form.password.id_for_label }}">Password</label>
+                            <a class="font-label-sm text-label-sm text-primary hover:underline" href="#">Forgot password?</a>
+                        </div>
+                        <div class="relative group w-full" id="password-container">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+                                <span class="material-symbols-outlined !text-[20px]" data-icon="lock">lock</span>
+                            </div>
+                            <input class="block w-full pl-10 pr-12 py-3 bg-surface border border-outline-variant rounded-lg text-on-surface font-body-md placeholder-outline focus:ring-2 focus:ring-primary focus:border-primary transition-all {% if wizard.form.password.errors %}border-error focus:border-error focus:ring-error{% endif %}" 
+                                   id="{{ wizard.form.password.id_for_label|default:'id_auth-password' }}" 
+                                   name="{{ wizard.form.password.html_name|default:'auth-password' }}" 
+                                   placeholder="••••••••" 
+                                   required 
+                                   type="password"/>
+                            <button class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface-variant transition-colors" id="toggle-password" type="button">
+                                <span class="material-symbols-outlined !text-[20px]" data-icon="visibility" id="password-icon">visibility</span>
+                            </button>
+                        </div>
+                        {% if wizard.form.password.errors %}
+                            <div class="text-error font-body-md text-sm mt-1">{{ wizard.form.password.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% if wizard.form.non_field_errors %}
+                        <div class="text-error font-body-md text-sm bg-error-container text-on-error-container p-3 rounded-md w-full">
+                            {{ wizard.form.non_field_errors|striptags }}
+                        </div>
+                    {% endif %}
+
+                    <!-- Remember Me -->
+                    <div class="flex items-center w-full">
+                        <input class="w-4 h-4 text-primary bg-surface border-outline-variant rounded focus:ring-primary" id="remember_me" name="remember" type="checkbox"/>
+                        <label class="ml-2 font-body-md text-body-md text-on-surface-variant cursor-pointer" for="remember_me">Remember me for 30 days</label>
+                    </div>
+                {% else %}
+                    <!-- OTP / Token Steps -->
+                    {% for field in wizard.form %}
+                        <div class="space-y-1.5 mb-4 w-full">
+                            <label class="font-label-md text-label-md text-on-surface-variant uppercase" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            <div class="relative group w-full">
+                                <input class="block w-full px-3 py-3 bg-surface border border-outline-variant rounded-lg text-on-surface font-body-md placeholder-outline focus:ring-2 focus:ring-primary focus:border-primary transition-all {% if field.errors %}border-error focus:border-error focus:ring-error{% endif %}" 
+                                       id="{{ field.id_for_label }}" 
+                                       name="{{ field.html_name }}" 
+                                       type="{% if 'password' in field.html_name %}password{% else %}text{% endif %}"
+                                       {% if field.field.required %}required{% endif %}/>
+                            </div>
+                            {% if field.help_text %}
+                                <p class="font-label-sm text-outline mt-1">{{ field.help_text|safe }}</p>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-error font-body-md text-sm mt-1">{{ field.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    {% if wizard.form.non_field_errors %}
+                        <div class="text-error font-body-md text-sm bg-error-container text-on-error-container p-3 rounded-md mb-4 w-full">
+                            {{ wizard.form.non_field_errors|striptags }}
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <!-- Submit & Action Buttons -->
+                <div class="space-y-3 mt-6 w-full">
+                    <!-- Hidden submit button to enable [enter] key -->
+                    <input type="submit" value="" hidden />
+                    
+                    <button class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md text-label-md uppercase tracking-widest hover:bg-primary-container transition-all shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="submit">
+                        {% if wizard.steps.current == 'auth' %}SIGN IN{% else %}SUBMIT{% endif %}
+                    </button>
+                    
+                    {% if wizard.steps.prev %}
+                        <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}" class="w-full bg-surface-container-high text-on-surface py-3 rounded-lg font-label-md text-label-md uppercase tracking-widest hover:bg-surface-variant transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Back
+                        </button>
+                    {% endif %}
+                </div>
+                
+                {% if other_devices %}
+                    <div class="mt-6 pt-4 border-t border-outline-variant w-full">
+                        <p class="font-label-md text-label-md text-on-surface-variant mb-3 text-center">Or use another method:</p>
+                        <div class="space-y-2 w-full">
+                        {% for other in other_devices %}
+                            <button name="challenge_device" value="{{ other.persistent_id }}" class="w-full bg-surface-container text-primary py-2 rounded-lg font-label-md text-label-md uppercase tracking-widest hover:bg-secondary-container transition-all border border-primary-fixed-dim" type="submit">
+                                {{ other|as_action }}
+                            </button>
+                        {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </form>
+
+            {% if backup_tokens %}
+                <div class="mt-6 pt-6 border-t border-outline-variant w-full">
+                    <form action="" method="post" class="w-full">
+                        {% csrf_token %}
+                        <p class="font-body-md text-body-md text-on-surface-variant mb-3 text-center">As a last resort, you can use a backup token:</p>
+                        <button name="wizard_goto_step" type="submit" value="backup" class="w-full bg-error-container text-on-error-container py-2 rounded-lg font-label-md text-label-md uppercase tracking-widest hover:bg-error transition-all hover:text-on-error">
+                            Use Backup Token
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <!-- Institutional Footnote (Internal) -->
+            <div class="mt-8 pt-6 border-t border-outline-variant flex items-start gap-3 w-full">
+                <span class="material-symbols-outlined text-on-primary-container !text-[18px]" data-icon="security">security</span>
+                <p class="font-label-sm text-label-sm text-on-primary-container italic">
+                    This is a restricted institutional system. Unauthorized access attempts are logged and reported to the system administrator.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="mt-auto py-8 text-center w-full">
+        <p class="font-label-sm text-label-sm text-on-surface-variant">
+            &copy; {% now "Y" %} TRACE Court Event Tracking. All rights reserved.
+        </p>
+    </footer>
+
+    <script>
+        const togglePassword = document.getElementById('toggle-password');
+        if (togglePassword) {
+            togglePassword.addEventListener('click', function() {
+                const passwordInput = document.getElementById('{{ wizard.form.password.id_for_label|default:"id_auth-password" }}');
+                const icon = document.getElementById('password-icon');
+                
+                if (passwordInput && passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.textContent = 'visibility_off';
+                } else if (passwordInput) {
+                    passwordInput.type = 'password';
+                    icon.textContent = 'visibility';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

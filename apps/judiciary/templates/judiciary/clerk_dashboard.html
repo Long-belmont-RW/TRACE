@@ -1,0 +1,173 @@
+{% extends "judiciary/base_dashboard.html" %}
+
+{% block dashboard_content %}
+    <!-- Page Header -->
+    <div class="flex items-end justify-between">
+        <div>
+            <h2 class="font-headline-md text-headline-md text-primary">Today's Hearings</h2>
+            <p class="font-body-md text-on-surface-variant">{% now "F j, Y" %} — Courtroom Efficiency Tracking</p>
+        </div>
+        <div class="flex gap-stack-sm">
+            <button class="bg-white border border-slate-200 px-4 py-2 rounded text-label-md font-semibold text-on-surface hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">calendar_month</span> Schedule Hearing
+            </button>
+            <button class="bg-primary text-white px-4 py-2 rounded text-label-md font-semibold hover:opacity-90 transition-opacity flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">print</span> Batch Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Bento-style KPI Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Total Hearings -->
+        <div class="bg-white p-6 border border-slate-200 rounded shadow-sm hover:border-primary transition-all group">
+            <div class="flex justify-between items-start mb-4">
+                <span class="p-2 bg-slate-100 rounded text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">gavel</span>
+                </span>
+                <span class="text-label-sm text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">Today</span>
+            </div>
+            <p class="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">Total Hearings</p>
+            <p class="font-display-lg text-display-lg text-primary">{{ total_hearings|default:"0" }}</p>
+        </div>
+
+        <!-- Completed -->
+        <div class="bg-white p-6 border border-slate-200 rounded shadow-sm hover:border-emerald-200 transition-all group">
+            <div class="flex justify-between items-start mb-4">
+                <span class="p-2 bg-emerald-50 rounded text-emerald-700">
+                    <span class="material-symbols-outlined">task_alt</span>
+                </span>
+            </div>
+            <p class="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">Completed</p>
+            <p class="font-display-lg text-display-lg text-primary">{{ completed_hearings|default:"0" }}</p>
+        </div>
+
+        <!-- Pending -->
+        <div class="bg-white p-6 border border-slate-200 rounded shadow-sm hover:border-secondary-container transition-all group">
+            <div class="flex justify-between items-start mb-4">
+                <span class="p-2 bg-blue-50 rounded text-blue-700">
+                    <span class="material-symbols-outlined">pending_actions</span>
+                </span>
+                <span class="text-label-sm text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">Priority</span>
+            </div>
+            <p class="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">Pending</p>
+            <p class="font-display-lg text-display-lg text-primary">{{ pending_hearings|default:"0" }}</p>
+        </div>
+
+        <!-- Adjourned -->
+        <div class="bg-white p-6 border border-slate-200 rounded shadow-sm hover:border-error-container transition-all group">
+            <div class="flex justify-between items-start mb-4">
+                <span class="p-2 bg-red-50 rounded text-red-700">
+                    <span class="material-symbols-outlined">event_busy</span>
+                </span>
+            </div>
+            <p class="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">Adjourned</p>
+            <p class="font-display-lg text-display-lg text-primary">{{ adjourned_hearings|default:"0" }}</p>
+        </div>
+    </div>
+
+    <!-- Hearings Table Card -->
+    <div class="bg-white border border-slate-200 rounded shadow-sm overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">list_alt</span>
+                <h3 class="font-headline-sm text-headline-sm text-primary">Live Docket</h3>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex rounded border border-slate-200 overflow-hidden">
+                    <button class="bg-primary text-white px-3 py-1 text-label-sm font-semibold">Live</button>
+                    <button class="bg-white text-on-surface-variant px-3 py-1 text-label-sm font-medium hover:bg-slate-100">All</button>
+                </div>
+                <span class="material-symbols-outlined text-on-surface-variant cursor-pointer">filter_list</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="bg-white text-on-surface-variant border-b border-slate-100">
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Case ID</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Inmate Name</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Primary Charge</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Time</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Court Room</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for hearing in cases %}
+                        <tr class="hover:bg-slate-50 transition-colors group">
+                            <td class="px-6 py-4 font-body-md text-primary font-semibold">{{ hearing.case_number }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed flex items-center justify-center font-bold text-label-sm">
+                                        {{ hearing.inmate.first_name|slice:":1" }}{{ hearing.inmate.last_name|slice:":1" }}
+                                    </div>
+                                    <span class="font-body-md text-on-surface">{{ hearing.inmate.first_name }} {{ hearing.inmate.last_name }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 font-body-md text-on-surface-variant">{{ hearing.charge_summary }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-1.5 font-label-md text-primary">
+                                    <span class="material-symbols-outlined text-[16px]">schedule</span>
+                                    <!-- Use a generic time or next_court_date since we don't have time field -->
+                                    09:00 AM
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 font-body-md text-on-surface">{{ hearing.court_name }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 rounded-full text-label-sm font-semibold 
+                                    {% if hearing.status == 'ONGOING' %}bg-blue-50 text-blue-700 
+                                    {% elif hearing.status == 'CONVICTED' or hearing.status == 'DISMISSED' %}bg-emerald-50 text-emerald-700 
+                                    {% else %}bg-slate-100 text-on-surface-variant{% endif %}">
+                                    {{ hearing.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'judiciary:log_decision' hearing.id %}" class="bg-primary text-white text-label-sm px-4 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 inline-block">
+                                    Log Decision
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td class="px-6 py-20 text-center" colspan="7">
+                                <div class="flex flex-col items-center justify-center text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[64px] mb-4 opacity-20" style="font-variation-settings: 'wght' 200;">event_note</span>
+                                    <h4 class="font-headline-sm text-headline-sm mb-1">No hearings scheduled</h4>
+                                    <p class="font-body-md max-w-sm">There are no docket entries found for the selected date. Use the 'Schedule' button to create a new record.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Micro-interaction for table row selection
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                // Visual feedback for selection
+                this.classList.toggle('bg-slate-100');
+            }
+        });
+    });
+
+    // Search highlight effect
+    const searchInput = document.querySelector('input[type="text"]');
+    if (searchInput) {
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.02]');
+            searchInput.parentElement.classList.add('transition-transform');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.02]');
+        });
+    }
+</script>
+{% endblock %}

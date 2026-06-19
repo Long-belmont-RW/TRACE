@@ -1,31 +1,437 @@
+{% load i18n static twofactor_tags %}
+{% has_totp_device request.user as has_2fa %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Superadmin Provisioning Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #2c3e50; color: #ecf0f1; margin: 0; padding: 2rem; }
-        .container { background: #34495e; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); max-width: 800px; margin: 0 auto; border-top: 4px solid #e74c3c; }
-        h1 { color: #e74c3c; }
-        .actions { margin-top: 2rem; display: flex; gap: 15px; }
-        .btn { padding: 12px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; }
-        .btn-admin { background: #e67e22; }
-        .logout { display: inline-block; margin-top: 2rem; padding: 10px 15px; background: #c0392b; color: white; text-decoration: none; border-radius: 4px; }
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TRACE Superadmin Dashboard</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#57657b",
+                      "on-primary-fixed": "#111c2d",
+                      "on-surface": "#0b1c30",
+                      "tertiary-fixed-dim": "#ddc39d",
+                      "surface": "#f8f9ff",
+                      "background": "#f8f9ff",
+                      "primary-fixed-dim": "#bcc7de",
+                      "inverse-surface": "#213145",
+                      "primary-fixed": "#d8e3fb",
+                      "outline-variant": "#c5c6cd",
+                      "secondary": "#515f74",
+                      "surface-container-high": "#dce9ff",
+                      "error-container": "#ffdad6",
+                      "inverse-primary": "#bcc7de",
+                      "on-error": "#ffffff",
+                      "primary": "#091426",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#eff4ff",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#0b1c30",
+                      "on-secondary-fixed": "#0d1c2f",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "tertiary": "#1e1200",
+                      "on-tertiary-fixed": "#271902",
+                      "surface-variant": "#d3e4fe",
+                      "surface-tint": "#545f73",
+                      "surface-container": "#e5eeff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-tertiary-fixed-variant": "#564427",
+                      "tertiary-container": "#35260c",
+                      "on-surface-variant": "#45474c",
+                      "secondary-container": "#d5e3fd",
+                      "secondary-fixed-dim": "#b9c7e0",
+                      "on-tertiary-container": "#a38c6a",
+                      "on-primary-container": "#8590a6",
+                      "primary-container": "#1e293b",
+                      "on-secondary-fixed-variant": "#3a485c",
+                      "surface-dim": "#cbdbf5",
+                      "tertiary-fixed": "#fadfb8",
+                      "surface-container-highest": "#d3e4fe",
+                      "surface-bright": "#f8f9ff",
+                      "secondary-fixed": "#d5e3fd",
+                      "outline": "#75777d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-md": "1rem",
+                      "container-padding": "2rem",
+                      "gutter": "1.5rem",
+                      "stack-sm": "0.5rem",
+                      "sidebar-width": "260px",
+                      "stack-lg": "1.5rem"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "headline-md-mobile": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "headline-md-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .active-tab {
+            border-left: 2px solid #d8e3fb;
+            color: #d8e3fb;
+            background-color: rgba(60, 71, 90, 0.1);
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Superadmin Provisioning Dashboard</h1>
-        <p>Hello, {{ user.email }}. You are securely logged in as a <strong>Superadmin</strong>.</p>
-        <p>This system strictly enforces invite-only registration. Use the tools below to provision new users and manage the TRACE platform.</p>
-        
-        <div class="actions">
-            <a href="{% url 'admin:accounts_user_add' %}" class="btn">Add New User</a>
-            <a href="{% url 'admin:index' %}" class="btn btn-admin">Advanced Admin Portal</a>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- Sidebar Wrapper -->
+<aside class="fixed left-0 top-0 h-full w-[260px] bg-primary flex flex-col border-r border-outline-variant z-50">
+<!-- Brand Identity -->
+<div class="p-6">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">TRACE System</h1>
+<p class="font-label-md text-label-md text-on-primary-container mt-1">Court Event Tracking</p>
+</div>
+<!-- Main Navigation -->
+<nav class="flex-1 mt-4 px-3 space-y-1">
+<a class="flex items-center px-4 py-3 border-l-2 border-primary-fixed text-primary-fixed bg-on-primary-fixed-variant/10 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-primary-container/70 hover:bg-on-primary-fixed-variant/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="notifications">notifications</span>
+<span class="font-label-md text-label-md">Alerts</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-primary-container/70 hover:bg-on-primary-fixed-variant/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="groups">groups</span>
+<span class="font-label-md text-label-md">Inmates</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-primary-container/70 hover:bg-on-primary-fixed-variant/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="folder_open">folder_open</span>
+<span class="font-label-md text-label-md">Cases</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-primary-container/70 hover:bg-on-primary-fixed-variant/5 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-primary-container/70 hover:bg-on-primary-fixed-variant/5 hover:text-primary-fixed transition-colors" href="/admin/">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Django Admin</span>
+</a>
+</nav>
+<!-- CTA Section -->
+<div class="px-6 py-4">
+<button class="w-full bg-on-primary-fixed-variant text-on-primary py-2.5 rounded-lg font-label-md text-label-md flex items-center justify-center hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px] mr-2" data-icon="add">add</span>
+                New Court Event
+            </button>
+</div>
+<!-- Footer Navigation -->
+<div class="mt-auto border-t border-on-primary-fixed-variant/20 px-3 py-4 space-y-1">
+<a class="flex items-center px-4 py-2 text-on-primary-container/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="history">history</span>
+<span class="font-label-md text-label-md">System Logs</span>
+</a>
+<a class="flex items-center px-4 py-2 text-on-primary-container/70 hover:text-primary-fixed transition-colors" href="{% url 'accounts:logout' %}">
+<span class="material-symbols-outlined mr-3" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Content Area -->
+<div class="ml-[260px] flex flex-col min-h-screen">
+<!-- Top Navbar -->
+<header class="h-16 bg-surface border-b border-outline-variant flex items-center justify-between px-container-padding sticky top-0 z-40">
+<div class="flex items-center gap-8">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface">TRACE Superadmin</h2>
+<nav class="hidden md:flex space-x-6">
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors" href="#">User Accounts</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md text-label-md" href="#">Institutions</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-[18px] text-primary mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-48" placeholder="Global search..." type="text"/>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button onclick="document.getElementById('twofa-modal').classList.remove('hidden')" class="p-2 text-on-surface-variant hover:text-primary transition-colors relative" title="Two-Factor Authentication">
+<span class="material-symbols-outlined">security</span>
+{% if has_2fa %}
+<span class="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full"></span>
+{% else %}
+<span class="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+{% endif %}
+</button>
+<div class="h-8 w-8 flex items-center justify-center font-bold text-sm bg-primary-fixed text-primary rounded-full overflow-hidden border border-outline-variant">
+{{ request.user.email|slice:":2"|upper }}
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="p-container-padding flex-1">
+<!-- Page Header -->
+<div class="mb-gutter flex justify-between items-end">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Superadmin Console</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">System Overview</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded font-label-md text-label-md hover:opacity-90 transition-opacity">
+                        Generate Report
+                    </button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity">
+                        Refresh Data
+                    </button>
+</div>
+</div>
+<!-- KPI Row (Bento Style) -->
+<div class="grid grid-cols-12 gap-gutter mb-gutter">
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 shadow-sm rounded-lg flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary-fixed-dim bg-primary p-2 rounded-lg" data-icon="account_balance">account_balance</span>
+<span class="text-error font-label-sm text-label-sm flex items-center bg-error-container px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-1" data-icon="trending_up">trending_up</span>
+                            +2 New
+                        </span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Active Institutions</p>
+<h4 class="font-display-lg text-display-lg text-on-surface">{{ total_institutions|default:"0" }}</h4>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 shadow-sm rounded-lg flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary-fixed-dim bg-primary p-2 rounded-lg" data-icon="person">person</span>
+<span class="text-on-secondary-container font-label-sm text-label-sm flex items-center bg-secondary-container px-2 py-0.5 rounded-full">
+                            Stable
+                        </span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total System Users</p>
+<h4 class="font-display-lg text-display-lg text-on-surface">{{ total_active_users|default:"0" }}</h4>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 shadow-sm rounded-lg flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary-fixed-dim bg-primary p-2 rounded-lg" data-icon="dns">dns</span>
+<div class="flex items-center text-on-primary-fixed-variant">
+<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+<span class="font-label-sm text-label-sm">Operational</span>
+</div>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">System Health / Uptime</p>
+<h4 class="font-display-lg text-display-lg text-on-surface">{{ system_uptime|default:"99.98%" }}</h4>
+</div>
+</div>
+</div>
+<!-- Main Layout Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- System Activity Log Table -->
+<div class="col-span-12 lg:col-span-9 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h5 class="font-headline-sm text-headline-sm text-on-surface">Global Audit Trail</h5>
+<a class="text-primary font-label-md text-label-md hover:underline" href="#">View All</a>
+</div>
+<div class="overflow-x-auto">
+                            <table class="w-full text-left">
+<thead class="bg-surface-container border-b border-outline-variant">
+<tr>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant uppercase">Timestamp</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant uppercase">User</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant uppercase">Action</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant uppercase">Impact</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+                                {% for log in recent_logs %}
+                                <tr class="hover:bg-surface-container-low transition-colors h-[48px]">
+                                    <td class="px-6 py-3 font-body-md text-body-md text-on-surface">{{ log.action_time|date:'M d, H:i' }}</td>
+                                    <td class="px-6 py-3 font-body-md text-body-md text-on-surface">{{ log.user.email }}</td>
+                                    <td class="px-6 py-3 font-body-md text-body-md">
+                                        <span class="px-2 py-0.5 rounded bg-surface-variant text-on-surface-variant font-label-sm text-label-sm">
+                                            {{ log.get_action_flag_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-3 font-body-md text-body-md text-on-surface-variant">{{ log.change_message|default:log.object_repr|default:"N/A" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td class="px-6 py-12 text-center text-on-surface-variant" colspan="4">
+                                        <div class="flex flex-col items-center">
+                                            <span class="material-symbols-outlined text-[48px] opacity-20 mb-2" data-icon="history_toggle_off">history_toggle_off</span>
+                                            <p class="font-body-lg text-body-lg">No recent activity detected.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+</table>
+</div>
+</div>
+<!-- Quick Actions Panel -->
+<div class="col-span-12 lg:col-span-3 space-y-gutter">
+<div class="bg-primary text-on-primary p-6 rounded-lg shadow-md border border-outline">
+<h5 class="font-headline-sm text-headline-sm mb-4">Quick Management</h5>
+<div class="grid grid-cols-1 gap-stack-sm">
+<button class="flex items-center w-full px-4 py-3 bg-on-primary-fixed-variant/20 border border-on-primary-fixed-variant/40 rounded hover:bg-on-primary-fixed-variant/40 transition-all text-left">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="add_business">add_business</span>
+<span class="font-label-md text-label-md">Provision Institution</span>
+</button>
+<button class="flex items-center w-full px-4 py-3 bg-on-primary-fixed-variant/20 border border-on-primary-fixed-variant/40 rounded hover:bg-on-primary-fixed-variant/40 transition-all text-left">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Manage User Roles</span>
+</button>
+<button class="flex items-center w-full px-4 py-3 bg-on-primary-fixed-variant/20 border border-on-primary-fixed-variant/40 rounded hover:bg-on-primary-fixed-variant/40 transition-all text-left">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="cloud_download">cloud_download</span>
+<span class="font-label-md text-label-md">Database Backups</span>
+</button>
+<button class="flex items-center w-full px-4 py-3 bg-on-primary-fixed-variant/20 border border-on-primary-fixed-variant/40 rounded hover:bg-on-primary-fixed-variant/40 transition-all text-left">
+<span class="material-symbols-outlined mr-3 text-[20px]" data-icon="api">api</span>
+<span class="font-label-md text-label-md">API Configuration</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant shadow-sm">
+<div class="flex items-center mb-4">
+<span class="material-symbols-outlined text-primary mr-2" data-icon="security">security</span>
+<h5 class="font-headline-sm text-headline-sm text-on-surface">System Integrity</h5>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Last Backup</span>
+<span class="font-label-md text-label-md text-on-surface">2h ago</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">SSL Certificate</span>
+<span class="font-label-md text-label-md text-green-600">Valid</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Active Instances</span>
+<span class="font-label-md text-label-md text-on-surface">12 / 12</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Two-Factor Authentication Modal -->
+<div id="twofa-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="document.getElementById('twofa-modal').classList.add('hidden')"></div>
+    <div class="relative bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" style="animation: modalSlideIn 0.3s ease-out;">
+        <div class="px-6 pt-6 pb-4 border-b border-outline-variant">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center {% if has_2fa %}bg-emerald-50 text-emerald-600{% else %}bg-amber-50 text-amber-600{% endif %}">
+                        <span class="material-symbols-outlined">security</span>
+                    </div>
+                    <div>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface">Two-Factor Authentication</h3>
+                        <p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Account security settings</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('twofa-modal').classList.add('hidden')" class="p-1 rounded-lg hover:bg-surface-container-low text-on-surface-variant transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
         </div>
-
-        <a href="{% url 'two_factor:profile' %}" style="margin-right: 15px; display: inline-block; margin-top: 2rem; color: #3498db;">2FA Profile</a>
-        <a href="{% url 'accounts:logout' %}" class="logout">Log Out</a>
+        <div class="px-6 py-5">
+            <div class="flex items-center gap-3 p-4 rounded-lg {% if has_2fa %}bg-emerald-50 border border-emerald-200{% else %}bg-amber-50 border border-amber-200{% endif %}">
+                <span class="material-symbols-outlined text-[20px] {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %}">
+                    {% if has_2fa %}verified_user{% else %}gpp_maybe{% endif %}
+                </span>
+                <div>
+                    <p class="font-label-md text-label-md {% if has_2fa %}text-emerald-800{% else %}text-amber-800{% endif %}">
+                        {% if has_2fa %}2FA is Active{% else %}2FA is Not Configured{% endif %}
+                    </p>
+                    <p class="font-label-sm text-label-sm {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %} mt-0.5">
+                        {% if has_2fa %}Your account is protected with an authenticator app.{% else %}Enable 2FA to add an extra layer of security.{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 pb-6 space-y-3">
+            {% if has_2fa %}
+            <a href="{% url 'two_factor:backup_tokens' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">key</span>
+                Backup Tokens
+            </a>
+            <a href="{% url 'two_factor:disable' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-surface-container-lowest border border-red-200 text-red-600 rounded-lg font-label-md text-label-md hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">shield_lock</span>
+                Disable Two-Factor
+            </a>
+            {% else %}
+            <a href="{% url 'two_factor:setup' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">add_moderator</span>
+                Set Up Two-Factor Authentication
+            </a>
+            {% endif %}
+        </div>
+        <div class="px-6 py-4 bg-surface-container-low border-t border-outline-variant">
+            <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">info</span>
+                <p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">
+                    Two-factor authentication adds a verification step using an authenticator app (e.g. Google Authenticator) each time you sign in.
+                </p>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.classList.add('scale-95');
+                setTimeout(() => el.classList.remove('scale-95'), 150);
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('twofa-modal')?.classList.add('hidden');
+            }
+        });
+    </script>
+</body></html>

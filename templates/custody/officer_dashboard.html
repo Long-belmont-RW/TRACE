@@ -1,22 +1,514 @@
+{% load i18n static twofactor_tags %}
+{% has_totp_device user as has_2fa %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Officer Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #fdfbfb; margin: 0; padding: 2rem; }
-        .container { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; border-top: 4px solid #2980b9; }
-        h1 { color: #2980b9; }
-        .logout { display: inline-block; margin-top: 1rem; padding: 10px 15px; background: #e74c3c; color: white; text-decoration: none; border-radius: 4px; }
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TRACE Custody Dashboard</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Scrollbar for High-Density UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c5c6cd;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #75777d;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
     </style>
+<!-- Tailwind Config Verbatim -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8f9ff",
+                        "outline-variant": "#c5c6cd",
+                        "surface-container-high": "#dce9ff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "error": "#ba1a1a",
+                        "primary": "#091426",
+                        "on-primary-container": "#8590a6",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "on-tertiary-container": "#a38c6a",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "tertiary": "#1e1200",
+                        "surface-bright": "#f8f9ff",
+                        "inverse-primary": "#bcc7de",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-low": "#eff4ff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#57657b",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#1e293b",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#564427",
+                        "tertiary-fixed-dim": "#ddc39d",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#d5e3fd",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "inverse-surface": "#213145",
+                        "surface-container": "#e5eeff",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#111c2d",
+                        "tertiary-fixed": "#fadfb8",
+                        "on-background": "#0b1c30",
+                        "primary-fixed-dim": "#bcc7de",
+                        "tertiary-container": "#35260c",
+                        "surface-tint": "#545f73",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#515f74",
+                        "on-surface-variant": "#45474c",
+                        "outline": "#75777d",
+                        "on-surface": "#0b1c30",
+                        "background": "#f8f9ff",
+                        "secondary-fixed": "#d5e3fd",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary-fixed": "#d8e3fb",
+                        "on-tertiary-fixed": "#271902",
+                        "on-secondary-fixed": "#0d1c2f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-padding": "2rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "sidebar-width": "260px",
+                        "stack-md": "1rem",
+                        "stack-lg": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
 </head>
-<body>
-    <div class="container">
-        <h1>Custody Officer Dashboard</h1>
-        <p>Hello, {{ user.email }}. You are logged in with the role: <strong>{{ user.role }}</strong></p>
-        <p>Here you will manage inmate intake, facility transfers, and custody logs.</p>
-        <a href="{% url 'two_factor:profile' %}" style="margin-right: 15px;">2FA Profile</a>
-        <a href="{% url 'accounts:logout' %}" class="logout">Log Out</a>
+<body class="bg-background font-body-md text-on-surface">
+<!-- Predicted SideNavBar Component -->
+<aside class="flex flex-col h-screen w-[260px] fixed left-0 top-0 z-40 bg-primary border-r border-outline-variant dark:border-primary">
+<div class="p-6 flex flex-col gap-1">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-on-primary rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">TRACE System</h1>
+<p class="font-label-sm text-label-sm text-on-primary-container/80 uppercase tracking-wider">Court Event Tracking</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 mt-6 px-4 space-y-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container/70 font-label-md hover:bg-primary-container/20 hover:text-on-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Custody Status (Active per Instructions) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg border-l-2 border-primary-fixed text-primary-fixed font-bold bg-primary-container/10 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="supervised_user_circle">supervised_user_circle</span>
+<span>Custody Status</span>
+</a>
+<!-- Court Schedule -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container/70 font-label-md hover:bg-primary-container/20 hover:text-on-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Court Schedule</span>
+</a>
+<!-- Inmate Search -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container/70 font-label-md hover:bg-primary-container/20 hover:text-on-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span>Inmate Search</span>
+</a>
+<!-- Reporting -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container/70 font-label-md hover:bg-primary-container/20 hover:text-on-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span>Reporting</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container/70 font-label-md hover:bg-primary-container/20 hover:text-on-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-4 py-6 border-t border-on-primary-container/10 space-y-1">
+<button class="w-full flex items-center justify-center gap-2 bg-on-primary text-primary py-2.5 rounded font-label-md mb-4 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_alert</span>
+                Log New Incident
+            </button>
+<a class="flex items-center gap-3 px-4 py-2 rounded text-on-primary-container/70 font-label-md hover:text-on-primary" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded text-on-primary-container/70 font-label-md hover:text-error transition-colors" href="{% url 'accounts:logout' %}">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Predicted TopNavBar Component -->
+<header class="flex justify-between items-center px-gutter h-16 fixed top-0 right-0 z-30 w-[calc(100%-260px)] bg-surface-container-lowest border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-6 flex-1">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-primary">TRACE Custody Dashboard</h2>
+<div class="relative w-96 group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline-variant group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="w-full pl-10 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="Search records, case IDs, or inmates..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<button onclick="document.getElementById('twofa-modal').classList.remove('hidden')" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors relative" title="Two-Factor Authentication">
+<span class="material-symbols-outlined">security</span>
+{% if has_2fa %}
+<span class="absolute top-2 right-2 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-surface-container-lowest"></span>
+{% else %}
+<span class="absolute top-2 right-2 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-surface-container-lowest animate-pulse"></span>
+{% endif %}
+</button>
+<a class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-error-container hover:text-error transition-colors" href="{% url 'accounts:logout' %}" title="Logout">
+<span class="material-symbols-outlined">logout</span>
+</a>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden xl:block">
+<p class="font-label-md text-label-md text-on-surface leading-tight">{{ user.get_full_name|default:user.email }}</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant leading-tight">{{ user.get_role_display }}</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-outline-variant shadow-sm flex items-center justify-center font-bold text-primary">
+{{ user.email|slice:":2"|upper }}
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[260px] pt-16 min-h-screen">
+<div class="p-container-padding">
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-stack-lg">
+<div>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">Custody Status Overview</h1>
+<p class="font-body-md text-on-surface-variant mt-1">Real-time tracking of institutional population and security metrics.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface rounded font-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filter View
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded font-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export Census
+                    </button>
+</div>
+</div>
+<!-- KPI Cards Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-stack-lg">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-center justify-between mb-3">
+<span class="p-2 rounded bg-primary/5 text-primary">
+<span class="material-symbols-outlined">group</span>
+</span>
+<span class="text-on-secondary-container font-label-sm px-2 py-0.5 bg-secondary-container rounded-full">+2.4%</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total in Custody</p>
+<h3 class="font-headline-md text-headline-md text-primary mt-1">{{ total_in_custody }}</h3>
+<p class="text-label-sm text-outline mt-2">Current institutional count</p>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-3">
+<span class="p-2 rounded bg-tertiary-container/10 text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined">move_item</span>
+</span>
+<span class="text-on-tertiary-container font-label-sm px-2 py-0.5 bg-tertiary-fixed rounded-full">Priority</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Pending Transfer</p>
+<h3 class="font-headline-md text-headline-md text-primary mt-1">{{ pending_transfers }}</h3>
+<p class="text-label-sm text-outline mt-2">Awaiting transport logistics</p>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-3">
+<span class="p-2 rounded bg-surface-container-high text-on-secondary-container">
+<span class="material-symbols-outlined">event_available</span>
+</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Release Due Today</p>
+<h3 class="font-headline-md text-headline-md text-primary mt-1">{{ release_today }}</h3>
+<p class="text-label-sm text-outline mt-2">Verified discharge orders</p>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-3">
+<span class="p-2 rounded bg-error-container text-error">
+<span class="material-symbols-outlined">warning</span>
+</span>
+<span class="text-error font-label-sm px-2 py-0.5 bg-error-container rounded-full">High Alert</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Security Flags</p>
+<h3 class="font-headline-md text-headline-md text-error mt-1">{{ security_flags }}</h3>
+<p class="text-label-sm text-outline mt-2">Active disciplinary actions</p>
+</div>
+</div>
+<!-- Custody Status Table Section -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant bg-surface-container-low/30 flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary">Inmate Registry</h2>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-on-surface-variant">Sort by:</span>
+<select class="bg-transparent border-none text-label-md font-semibold text-primary focus:ring-0 cursor-pointer">
+<option>Name (A-Z)</option>
+<option>Unit</option>
+<option>Status</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/10 text-on-surface-variant border-b border-outline-variant">
+<th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Inmate Name</th>
+<th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Inmate ID</th>
+<th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Custody Level</th>
+<th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Housing Unit</th>
+<th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+                            {% for inmate in inmates %}
+                            <tr class="hover:bg-surface-container-low/20 transition-colors group">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-[10px]">
+                                            {{ inmate.first_name|slice:":1"|upper }}{{ inmate.last_name|slice:":1"|upper }}
+                                        </div>
+                                        <span class="font-semibold text-primary">{{ inmate.first_name }} {{ inmate.last_name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-on-surface-variant font-mono text-[13px]">{{ inmate.inmate_number }}</td>
+                                <td class="px-6 py-4">
+                                    <!-- Dynamic Badge based on Level (Logic placeholder) -->
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary text-on-primary">
+                                        Standard
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-on-surface-variant">{{ inmate.facility.name }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 font-label-md text-label-md {% if inmate.has_overdue_flag %}text-tertiary-container{% else %}text-on-secondary-container{% endif %}">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                        {% if inmate.has_overdue_flag %}Remand{% else %}Active{% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="px-3 py-1.5 text-primary font-label-md border border-outline-variant rounded hover:bg-primary hover:text-on-primary transition-all duration-200">
+                                        View Profile
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td class="px-6 py-20 text-center" colspan="6">
+                                    <div class="flex flex-col items-center justify-center text-outline-variant">
+                                        <span class="material-symbols-outlined text-6xl mb-4">folder_off</span>
+                                        <p class="font-headline-sm text-headline-sm text-on-surface-variant">No inmate records found</p>
+                                        <p class="font-body-md text-outline">Adjust your filters or contact the database administrator.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-surface-container-low/10 border-t border-outline-variant flex items-center justify-between">
+<p class="text-label-sm text-on-surface-variant">Showing all active records in Unit A-D</p>
+<div class="flex gap-2">
+<button class="p-1 text-on-surface-variant hover:text-primary disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-1 text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Dashboard Atmospheric Element (Bento Section) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mt-stack-lg">
+<div class="lg:col-span-2 bg-surface-container-lowest p-6 rounded-lg border border-outline-variant">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-sm text-headline-sm text-primary">Shift Log Entries</h3>
+<a class="text-primary font-label-md hover:underline" href="#">View All</a>
+</div>
+<div class="space-y-4">
+<div class="p-4 rounded border border-outline-variant/30 bg-surface">
+<div class="flex justify-between mb-1">
+<span class="font-label-md text-primary">Unit 4B Check-In</span>
+<span class="text-label-sm text-outline">09:45 AM</span>
+</div>
+<p class="text-body-md text-on-surface-variant">All occupants accounted for. No maintenance issues reported during visual inspection.</p>
+</div>
+<div class="p-4 rounded border border-outline-variant/30 bg-surface">
+<div class="flex justify-between mb-1">
+<span class="font-label-md text-error">Security Incident Report</span>
+<span class="text-label-sm text-outline">08:12 AM</span>
+</div>
+<p class="text-body-md text-on-surface-variant">Verbal altercation in Dining Hall suppressed. Inmate 88219-X moved to disciplinary segregation.</p>
+</div>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-lg border border-outline-variant bg-primary-container text-on-primary p-6 flex flex-col justify-end min-h-[200px]">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]">security</span>
+</div>
+<p class="font-label-md text-label-md text-primary-fixed uppercase tracking-widest mb-2">Protocol Reminder</p>
+<h3 class="font-headline-sm text-headline-sm mb-4">Ensure dual-verification for all upcoming release orders.</h3>
+<button class="w-fit px-4 py-2 bg-primary-fixed text-primary rounded font-label-md hover:brightness-90 transition-all">
+                        Read Guidelines
+                    </button>
+</div>
+</div>
+</div>
+<!-- Two-Factor Authentication Modal -->
+<div id="twofa-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="document.getElementById('twofa-modal').classList.add('hidden')"></div>
+    <div class="relative bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" style="animation: modalSlideIn 0.3s ease-out;">
+        <div class="px-6 pt-6 pb-4 border-b border-outline-variant">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center {% if has_2fa %}bg-emerald-50 text-emerald-600{% else %}bg-amber-50 text-amber-600{% endif %}">
+                        <span class="material-symbols-outlined">security</span>
+                    </div>
+                    <div>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface">Two-Factor Authentication</h3>
+                        <p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Account security settings</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('twofa-modal').classList.add('hidden')" class="p-1 rounded-lg hover:bg-surface-container-low text-on-surface-variant transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+        </div>
+        <div class="px-6 py-5">
+            <div class="flex items-center gap-3 p-4 rounded-lg {% if has_2fa %}bg-emerald-50 border border-emerald-200{% else %}bg-amber-50 border border-amber-200{% endif %}">
+                <span class="material-symbols-outlined text-[20px] {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %}">
+                    {% if has_2fa %}verified_user{% else %}gpp_maybe{% endif %}
+                </span>
+                <div>
+                    <p class="font-label-md text-label-md {% if has_2fa %}text-emerald-800{% else %}text-amber-800{% endif %}">
+                        {% if has_2fa %}2FA is Active{% else %}2FA is Not Configured{% endif %}
+                    </p>
+                    <p class="font-label-sm text-label-sm {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %} mt-0.5">
+                        {% if has_2fa %}Your account is protected with an authenticator app.{% else %}Enable 2FA to add an extra layer of security.{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 pb-6 space-y-3">
+            {% if has_2fa %}
+            <a href="{% url 'two_factor:backup_tokens' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">key</span>
+                Backup Tokens
+            </a>
+            <a href="{% url 'two_factor:disable' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-surface-container-lowest border border-red-200 text-red-600 rounded-lg font-label-md text-label-md hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">shield_lock</span>
+                Disable Two-Factor
+            </a>
+            {% else %}
+            <a href="{% url 'two_factor:setup' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">add_moderator</span>
+                Set Up Two-Factor Authentication
+            </a>
+            {% endif %}
+        </div>
+        <div class="px-6 py-4 bg-surface-container-low border-t border-outline-variant">
+            <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">info</span>
+                <p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">
+                    Two-factor authentication adds a verification step using an authenticator app (e.g. Google Authenticator) each time you sign in.
+                </p>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+</main>
+<script>
+        // Micro-interaction for KPI cards
+        document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0px)';
+            });
+            card.style.transition = 'transform 0.2s ease-out, shadow 0.2s ease-out';
+        });
+
+        // Simple Search Focus Interaction
+        const searchInput = document.querySelector('input[type="text"]');
+        const searchIcon = searchInput?.previousElementSibling;
+        searchInput?.addEventListener('focus', () => {
+            searchIcon.style.transform = 'scale(1.1)';
+        });
+        searchInput?.addEventListener('blur', () => {
+            searchIcon.style.transform = 'scale(1)';
+        });
+
+        // Close 2FA modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('twofa-modal')?.classList.add('hidden');
+            }
+        });
+    </script>
+</body></html>

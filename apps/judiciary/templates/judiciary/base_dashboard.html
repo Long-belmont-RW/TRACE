@@ -1,0 +1,304 @@
+{% load i18n static twofactor_tags %}
+{% has_totp_device user as has_2fa %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>{% block title %}TRACE | Court Clerk Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#545f73",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed-dim": "#bcc7de",
+                        "outline": "#75777d",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "tertiary-fixed-dim": "#ddc39d",
+                        "primary": "#091426",
+                        "on-primary-container": "#8590a6",
+                        "on-tertiary-container": "#a38c6a",
+                        "tertiary": "#1e1200",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-container": "#57657b",
+                        "secondary-container": "#d5e3fd",
+                        "on-background": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#271902",
+                        "primary-container": "#1e293b",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#111c2d",
+                        "secondary-fixed": "#d5e3fd",
+                        "secondary": "#515f74",
+                        "on-surface": "#0b1c30",
+                        "primary-fixed": "#d8e3fb",
+                        "outline-variant": "#c5c6cd",
+                        "on-tertiary-fixed-variant": "#564427",
+                        "inverse-primary": "#bcc7de",
+                        "surface-container": "#e5eeff",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "surface": "#f8f9ff",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "inverse-surface": "#213145",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "surface-container-highest": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#fadfb8",
+                        "on-surface-variant": "#45474c",
+                        "surface-variant": "#d3e4fe",
+                        "tertiary-container": "#35260c",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#3a485c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "gutter": "1.5rem",
+                        "stack-sm": "0.5rem",
+                        "sidebar-width": "260px",
+                        "stack-lg": "1.5rem",
+                        "container-padding": "2rem"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-sidebar-indicator {
+            position: absolute;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background-color: #bcc7de;
+        }
+        /* Custom scrollbar for high-density tables */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f8f9ff;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c6cd;
+            border-radius: 10px;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-on-surface antialiased overflow-hidden h-screen flex">
+    <!-- SideNavBar -->
+    <aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-primary border-r border-outline-variant flex flex-col z-50">
+        <div class="py-gutter px-6 flex flex-col h-full">
+            <!-- Header/Logo -->
+            <div class="mb-stack-lg">
+                <h1 class="font-headline-md text-headline-md font-bold text-on-primary tracking-tight">TRACE</h1>
+                <p class="text-on-primary-container font-label-sm text-label-sm uppercase tracking-widest opacity-80">Court Event Tracking</p>
+            </div>
+            <!-- Navigation Links -->
+            <nav class="flex-1 space-y-1">
+                <!-- Dashboard (Cases) -->
+                <a class="flex items-center gap-3 px-4 py-3 border-l-2 border-primary-fixed text-primary-fixed font-semibold bg-primary-container group relative" href="{% url 'judiciary:clerk_dashboard' %}">
+                    <span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+                    <span class="font-label-md text-label-md">Cases</span>
+                </a>
+                <!-- Decisions Log -->
+                <a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant transition-colors group" href="{% url 'judiciary:decisions_log' %}">
+                    <span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+                    <span class="font-label-md text-label-md">Decisions Log</span>
+                </a>
+            </nav>
+            <!-- Footer Section -->
+            <div class="mt-auto border-t border-on-primary-fixed-variant pt-stack-md">
+                <a href="{% url 'accounts:logout' %}" class="block text-center w-full mt-4 bg-primary-fixed text-on-primary-fixed font-semibold py-2 px-4 rounded hover:bg-surface-tint hover:text-white transition-all text-label-md">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 ml-[260px] h-screen overflow-y-auto bg-slate-50 flex flex-col">
+        <!-- TopNavBar -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-gutter sticky top-0 z-40 shadow-sm">
+            <div class="flex items-center gap-4 flex-1">
+                <div class="relative w-full max-w-md">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                    <input class="w-full bg-slate-50 border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary rounded-lg pl-10 pr-4 py-1.5 text-body-md placeholder:text-on-surface-variant/50" placeholder="Search cases, inmates, or hearings..." type="text">
+                </div>
+            </div>
+            <div class="flex items-center gap-stack-lg">
+                <div class="flex items-center gap-4 border-r border-slate-200 pr-stack-lg">
+                    <span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+                    <button onclick="document.getElementById('twofa-modal').classList.remove('hidden')" class="relative text-on-surface-variant cursor-pointer hover:text-primary transition-colors" title="Two-Factor Authentication">
+                        <span class="material-symbols-outlined">security</span>
+                        {% if has_2fa %}
+                        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white"></span>
+                        {% else %}
+                        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white animate-pulse"></span>
+                        {% endif %}
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <p class="font-label-md text-on-surface leading-tight">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="font-label-sm text-on-surface-variant leading-tight">{{ user.get_role_display|default:"Officer Role" }}</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-primary-fixed-dim text-on-primary-fixed flex items-center justify-center font-bold text-label-sm border-2 border-primary-fixed">
+                        {{ user.username|slice:":2"|upper }}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="p-container-padding pb-0 space-y-2">
+                {% for message in messages %}
+                    <div class="p-4 rounded-md text-sm font-medium
+                        {% if message.tags == 'error' %}bg-error-container text-on-error-container border border-error
+                        {% elif message.tags == 'success' %}bg-secondary-container text-on-secondary-container border border-secondary
+                        {% else %}bg-primary-container text-on-primary-container border border-primary{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Main Content Canvas -->
+        <div class="p-container-padding space-y-stack-lg">
+            {% block dashboard_content %}
+            {% endblock %}
+        </div>
+        
+        <!-- Two-Factor Authentication Modal -->
+        <div id="twofa-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="document.getElementById('twofa-modal').classList.add('hidden')"></div>
+            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" style="animation: modalSlideIn 0.3s ease-out;">
+                <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center {% if has_2fa %}bg-emerald-50 text-emerald-600{% else %}bg-amber-50 text-amber-600{% endif %}">
+                                <span class="material-symbols-outlined">security</span>
+                            </div>
+                            <div>
+                                <h3 class="font-headline-sm text-headline-sm text-on-surface">Two-Factor Authentication</h3>
+                                <p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Account security settings</p>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('twofa-modal').classList.add('hidden')" class="p-1 rounded-lg hover:bg-slate-100 text-on-surface-variant transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">close</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-6 py-5">
+                    <div class="flex items-center gap-3 p-4 rounded-lg {% if has_2fa %}bg-emerald-50 border border-emerald-200{% else %}bg-amber-50 border border-amber-200{% endif %}">
+                        <span class="material-symbols-outlined text-[20px] {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %}">
+                            {% if has_2fa %}verified_user{% else %}gpp_maybe{% endif %}
+                        </span>
+                        <div>
+                            <p class="font-label-md text-label-md {% if has_2fa %}text-emerald-800{% else %}text-amber-800{% endif %}">
+                                {% if has_2fa %}2FA is Active{% else %}2FA is Not Configured{% endif %}
+                            </p>
+                            <p class="font-label-sm text-label-sm {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %} mt-0.5">
+                                {% if has_2fa %}Your account is protected with an authenticator app.{% else %}Enable 2FA to add an extra layer of security.{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 pb-6 space-y-3">
+                    {% if has_2fa %}
+                    <a href="{% url 'two_factor:backup_tokens' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                        <span class="material-symbols-outlined text-[18px]">key</span>
+                        Backup Tokens
+                    </a>
+                    <a href="{% url 'two_factor:disable' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg font-label-md text-label-md hover:bg-red-50 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">shield_lock</span>
+                        Disable Two-Factor
+                    </a>
+                    {% else %}
+                    <a href="{% url 'two_factor:setup' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                        <span class="material-symbols-outlined text-[18px]">add_moderator</span>
+                        Set Up Two-Factor Authentication
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="flex items-start gap-2">
+                        <span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">info</span>
+                        <p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">
+                            Two-factor authentication adds a verification step using an authenticator app (e.g. Google Authenticator) each time you sign in.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Compliance Info -->
+        <div class="mt-auto px-container-padding pb-stack-md">
+            <div class="flex justify-between items-center pt-stack-md border-t border-slate-200 text-label-sm text-on-surface-variant/60">
+                <p>© {% now "Y" %} TRACE System. All events are logged and audited.</p>
+                <div class="flex gap-4">
+                    <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+                    <a class="hover:text-primary transition-colors" href="#">Audit Logs</a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('twofa-modal')?.classList.add('hidden');
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

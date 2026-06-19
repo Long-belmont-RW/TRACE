@@ -1,0 +1,348 @@
+{% load i18n static twofactor_tags %}
+{% has_totp_device user as has_2fa %}
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TRACE | Legal Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#545f73",
+                    "surface-container-high": "#dce9ff",
+                    "primary-fixed-dim": "#bcc7de",
+                    "outline": "#75777d",
+                    "on-secondary-fixed": "#0d1c2f",
+                    "tertiary-fixed-dim": "#ddc39d",
+                    "primary": "#091426",
+                    "on-primary-container": "#8590a6",
+                    "on-tertiary-container": "#a38c6a",
+                    "tertiary": "#1e1200",
+                    "surface-dim": "#cbdbf5",
+                    "surface-container-low": "#eff4ff",
+                    "surface-bright": "#f8f9ff",
+                    "on-secondary-container": "#57657b",
+                    "secondary-container": "#d5e3fd",
+                    "on-background": "#0b1c30",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#eaf1ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#271902",
+                    "primary-container": "#1e293b",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#111c2d",
+                    "secondary-fixed": "#d5e3fd",
+                    "secondary": "#515f74",
+                    "on-surface": "#0b1c30",
+                    "primary-fixed": "#d8e3fb",
+                    "outline-variant": "#c5c6cd",
+                    "on-tertiary-fixed-variant": "#564427",
+                    "inverse-primary": "#bcc7de",
+                    "surface-container": "#e5eeff",
+                    "secondary-fixed-dim": "#b9c7e0",
+                    "surface": "#f8f9ff",
+                    "on-error": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "background": "#f8f9ff",
+                    "inverse-surface": "#213145",
+                    "on-primary-fixed-variant": "#3c475a",
+                    "surface-container-highest": "#d3e4fe",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#fadfb8",
+                    "on-surface-variant": "#45474c",
+                    "surface-variant": "#d3e4fe",
+                    "tertiary-container": "#35260c",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#3a485c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-md": "1rem",
+                    "gutter": "1.5rem",
+                    "stack-sm": "0.5rem",
+                    "sidebar-width": "260px",
+                    "stack-lg": "1.5rem",
+                    "container-padding": "2rem"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e2e8f0;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+<!-- Header Section -->
+<header class="w-full max-w-5xl px-gutter py-stack-lg flex justify-between items-center bg-transparent">
+<div class="flex items-center gap-3">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">TRACE</span>
+<div class="h-6 w-px bg-outline-variant"></div>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Legal Portal</span>
+</div>
+<div class="flex items-center gap-4">
+<button onclick="document.getElementById('twofa-modal').classList.remove('hidden')" class="flex items-center gap-2 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors relative" title="Two-Factor Authentication">
+    <span class="material-symbols-outlined text-[20px]">security</span>
+    {% if has_2fa %}
+    <span class="w-2 h-2 bg-emerald-500 rounded-full absolute top-1.5 right-1.5 border border-white"></span>
+    {% else %}
+    <span class="w-2 h-2 bg-amber-400 rounded-full absolute top-1.5 right-1.5 border border-white animate-pulse"></span>
+    {% endif %}
+</button>
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface hover:bg-surface-container-low rounded-lg transition-colors" href="{% url 'accounts:logout' %}">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-3xl px-gutter pt-24 pb-12 flex flex-col items-center">
+<!-- Animated Background Element (Atmospheric) -->
+<div class="fixed inset-0 pointer-events-none -z-10 opacity-40">
+</div>
+<!-- Hero / Search Section -->
+<div class="w-full text-center mb-stack-lg">
+<h1 class="font-display-lg text-display-lg text-primary mb-stack-sm">Public Case Access</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto">
+                Secure read-only access for verified legal representatives to monitor court event timelines.
+            </p>
+</div>
+<!-- Centered Search Interface -->
+<div class="w-full mb-12">
+<form class="relative group" method="GET">
+<div class="relative flex items-center">
+<div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</div>
+<input class="w-full h-16 pl-14 pr-32 bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-primary focus:border-primary font-body-lg text-body-lg transition-all outline-none" name="q" placeholder="Enter Bar ID / Inmate Name / Case Number" type="text" value="{{ search_query|default:'' }}"/>
+<button class="absolute right-2 px-6 py-3 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container transition-all" type="submit">
+                        SEARCH
+                    </button>
+</div>
+</form>
+</div>
+<!-- Results Area -->
+<div class="w-full space-y-6" id="results-container">
+            
+            {% if case_found %}
+            <!-- Summary Card -->
+<div class="glass-card rounded-xl p-8 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+<div class="flex justify-between items-start mb-8">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1 block">Subject Identification</span>
+<h2 class="font-headline-md text-headline-md text-primary">{{ case_details.inmate_name }}</h2>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">fingerprint</span>
+<span class="font-label-md text-label-md text-on-surface-variant">{{ case_details.case_number }}</span>
+</div>
+</div>
+<div class="px-3 py-1 bg-surface-container-high text-primary rounded font-label-sm text-label-sm">
+                        {{ case_details.case_status }}
+                    </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 pt-8">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Custody Location</span>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold">{{ case_details.custody_location }}</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Next Court Date</span>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold">{{ case_details.next_court_date|date:"M d, Y" }}</p>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-slate-100 flex justify-end">
+<button class="flex items-center gap-2 text-primary font-label-md text-label-md hover:underline decoration-2 underline-offset-4">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                        VIEW FULL TIMELINE
+                    </button>
+</div>
+</div>
+            {% elif search_query %}
+            <!-- No Results Found -->
+<div class="text-center py-12 px-6 border-2 border-dashed border-slate-200 rounded-xl">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined text-on-surface-variant text-[32px]">search_off</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2">No active records found</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    We couldn't find any data matching <span class="font-semibold text-primary">"{{ search_query }}"</span>. <br/>Please verify the Bar ID or Inmate Number and try again.
+                </p>
+</div>
+            {% else %}
+            <!-- Initial State / Placeholder -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 opacity-60">
+<div class="p-6 bg-white border border-slate-200 rounded-lg flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary mb-3">gavel</span>
+<span class="font-label-md text-label-md text-primary">Verify Status</span>
+</div>
+<div class="p-6 bg-white border border-slate-200 rounded-lg flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary mb-3">schedule</span>
+<span class="font-label-md text-label-md text-primary">Check Dates</span>
+</div>
+<div class="p-6 bg-white border border-slate-200 rounded-lg flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary mb-3">assignment_late</span>
+<span class="font-label-md text-label-md text-primary">Monitor Alerts</span>
+</div>
+</div>
+            {% endif %}
+
+        </div>
+</main>
+<!-- Footer Information -->
+<footer class="mt-auto w-full max-w-5xl px-gutter py-stack-lg flex flex-col md:flex-row justify-between items-center text-on-surface-variant border-t border-slate-200 gap-4">
+<p class="font-label-sm text-label-sm">© 2024 TRACE INSTITUTIONAL. AUTHORIZED USE ONLY.</p>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm hover:text-primary transition-colors" href="#">Terms of Access</a>
+<a class="font-label-sm text-label-sm hover:text-primary transition-colors" href="#">System Status</a>
+</div>
+</footer>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.querySelector('input[type="text"]');
+            const form = document.querySelector('form');
+
+            // Simple focus animation trigger
+            input.addEventListener('focus', () => {
+                form.classList.add('scale-[1.01]');
+            });
+            input.addEventListener('blur', () => {
+                form.classList.remove('scale-[1.01]');
+            });
+
+            // Handle empty search prevention
+            form.addEventListener('submit', (e) => {
+                if (!input.value.trim()) {
+                    e.preventDefault();
+                    input.classList.add('border-error');
+                    setTimeout(() => input.classList.remove('border-error'), 500);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('twofa-modal')?.classList.add('hidden');
+            }
+        });
+    </script>
+<!-- Two-Factor Authentication Modal -->
+<div id="twofa-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="document.getElementById('twofa-modal').classList.add('hidden')"></div>
+    <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" style="animation: modalSlideIn 0.3s ease-out;">
+        <div class="px-6 pt-6 pb-4 border-b border-slate-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center {% if has_2fa %}bg-emerald-50 text-emerald-600{% else %}bg-amber-50 text-amber-600{% endif %}">
+                        <span class="material-symbols-outlined">security</span>
+                    </div>
+                    <div>
+                        <h3 class="font-headline-sm text-headline-sm text-primary">Two-Factor Authentication</h3>
+                        <p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Account security settings</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('twofa-modal').classList.add('hidden')" class="p-1 rounded-lg hover:bg-slate-100 text-on-surface-variant transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+        </div>
+        <div class="px-6 py-5">
+            <div class="flex items-center gap-3 p-4 rounded-lg {% if has_2fa %}bg-emerald-50 border border-emerald-200{% else %}bg-amber-50 border border-amber-200{% endif %}">
+                <span class="material-symbols-outlined text-[20px] {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %}">
+                    {% if has_2fa %}verified_user{% else %}gpp_maybe{% endif %}
+                </span>
+                <div>
+                    <p class="font-label-md text-label-md {% if has_2fa %}text-emerald-800{% else %}text-amber-800{% endif %}">
+                        {% if has_2fa %}2FA is Active{% else %}2FA is Not Configured{% endif %}
+                    </p>
+                    <p class="font-label-sm text-label-sm {% if has_2fa %}text-emerald-600{% else %}text-amber-600{% endif %} mt-0.5">
+                        {% if has_2fa %}Your account is protected with an authenticator app.{% else %}Enable 2FA to add an extra layer of security.{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 pb-6 space-y-3">
+            {% if has_2fa %}
+            <a href="{% url 'two_factor:backup_tokens' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">key</span>
+                Backup Tokens
+            </a>
+            <a href="{% url 'two_factor:disable' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg font-label-md text-label-md hover:bg-red-50 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">shield_lock</span>
+                Disable Two-Factor
+            </a>
+            {% else %}
+            <a href="{% url 'two_factor:setup' %}" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[18px]">add_moderator</span>
+                Set Up Two-Factor Authentication
+            </a>
+            {% endif %}
+        </div>
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100">
+            <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">info</span>
+                <p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">
+                    Two-factor authentication adds a verification step using an authenticator app (e.g. Google Authenticator) each time you sign in.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</body></html>

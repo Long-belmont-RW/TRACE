@@ -11,6 +11,8 @@ class Facility(models.Model):
         limit_choices_to={'role': 'FACILITY_COMMANDER'}
     )
 
+    class Meta:
+        verbose_name_plural = 'facilities'
     def __str__(self):
         return self.name
 

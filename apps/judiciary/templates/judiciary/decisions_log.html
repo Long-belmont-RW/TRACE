@@ -1,0 +1,81 @@
+{% extends 'judiciary/base_dashboard.html' %}
+
+{% block title %}TRACE | Decisions Log{% endblock %}
+
+{% block dashboard_content %}
+    <div class="flex items-end justify-between mb-6">
+        <div>
+            <h2 class="font-headline-md text-headline-md text-primary">My Decisions Log</h2>
+            <p class="font-body-md text-on-surface-variant">History of all hearing logs submitted by you.</p>
+        </div>
+    </div>
+
+    <!-- Hearings Table Card -->
+    <div class="bg-white border border-slate-200 rounded shadow-sm overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">assessment</span>
+                <h3 class="font-headline-sm text-headline-sm text-primary">Decision History</h3>
+            </div>
+        </div>
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="bg-white text-on-surface-variant border-b border-slate-100">
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Date & Time</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Case Number</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Inmate</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Outcome</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Bail Amount</th>
+                        <th class="px-6 py-4 font-label-md text-label-md uppercase tracking-wider">Notes</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for log in logs %}
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="px-6 py-4 font-body-md text-on-surface-variant">{{ log.hearing_date|date:"Y-m-d H:i" }}</td>
+                        <td class="px-6 py-4 font-body-md text-primary font-semibold">{{ log.case.case_number }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed flex items-center justify-center font-bold text-label-sm">
+                                    {{ log.case.inmate.first_name|slice:":1" }}{{ log.case.inmate.last_name|slice:":1" }}
+                                </div>
+                                <span class="font-body-md text-on-surface">{{ log.case.inmate.first_name }} {{ log.case.inmate.last_name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-full text-label-sm font-semibold 
+                                {% if log.outcome == 'BAIL_GRANTED' %}bg-emerald-50 text-emerald-700
+                                {% elif log.outcome == 'DISMISSED' %}bg-slate-100 text-slate-800
+                                {% elif log.outcome == 'SENTENCED' %}bg-red-50 text-red-700
+                                {% else %}bg-blue-50 text-blue-800{% endif %}">
+                                {{ log.get_outcome_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 font-body-md text-on-surface">
+                            {% if log.bail_amount %}
+                                ${{ log.bail_amount }}
+                            {% else %}
+                                <span class="text-on-surface-variant/50">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-on-surface-variant max-w-xs truncate" title="{{ log.notes }}">
+                            {{ log.notes|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td class="px-6 py-20 text-center" colspan="6">
+                            <div class="flex flex-col items-center justify-center text-on-surface-variant">
+                                <span class="material-symbols-outlined text-[64px] mb-4 opacity-20" style="font-variation-settings: 'wght' 200;">assessment</span>
+                                <h4 class="font-headline-sm text-headline-sm mb-1">No decisions logged</h4>
+                                <p class="font-body-md max-w-sm">You haven't logged any decisions yet.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

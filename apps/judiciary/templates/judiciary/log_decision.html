@@ -1,0 +1,155 @@
+{% extends 'judiciary/base_dashboard.html' %}
+
+{% block title %}Log Decision - TRACE{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-3xl mx-auto mt-6">
+    <div class="bg-surface-container-lowest shadow-sm rounded-xl border border-outline-variant overflow-hidden mb-8">
+        <div class="bg-primary px-6 py-4 flex items-center gap-3">
+            <span class="material-symbols-outlined text-on-primary">gavel</span>
+            <h4 class="font-headline-sm text-headline-sm text-on-primary mb-0">Log Decision for Case: {{ case.case_number }}</h4>
+        </div>
+        
+        <div class="p-6 md:p-8">
+            <div class="mb-8 bg-surface p-5 rounded-lg border border-outline-variant/50">
+                <h5 class="font-headline-sm text-headline-sm text-primary mb-1">Inmate: {{ case.inmate.first_name }} {{ case.inmate.last_name }}</h5>
+                <p class="font-body-md text-on-surface-variant">Charge: <span class="font-medium text-on-surface">{{ case.charge_summary }}</span></p>
+            </div>
+            
+            <form method="post" id="decisionForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2">Outcome:</label>
+                    <div class="mt-2 font-body-md space-y-2" id="outcome-radios">
+                        {{ form.outcome }}
+                    </div>
+                    {% if form.outcome.errors %}
+                    <p class="mt-2 text-sm text-error" id="outcome-error">{{ form.outcome.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div id="bailDetailsSection" style="display: none;" class="bg-surface-container-low border border-primary-fixed-dim p-6 rounded-lg space-y-5">
+                    <h5 class="font-headline-sm text-headline-sm text-primary border-b border-primary-fixed-dim pb-3">Bail Details</h5>
+                    
+                    <div>
+                        <label for="{{ form.bail_amount.id_for_label }}" class="block font-label-md text-label-md text-on-surface-variant uppercase mb-1">Bail Amount ($):</label>
+                        <div class="mt-1">
+                            {{ form.bail_amount }}
+                        </div>
+                        {% if form.bail_amount.errors %}
+                        <p class="mt-2 text-sm text-error">{{ form.bail_amount.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.bail_conditions.id_for_label }}" class="block font-label-md text-label-md text-on-surface-variant uppercase mb-1">Bail Conditions:</label>
+                        <div class="mt-1">
+                            {{ form.bail_conditions }}
+                        </div>
+                        {% if form.bail_conditions.errors %}
+                        <p class="mt-2 text-sm text-error">{{ form.bail_conditions.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.notes.id_for_label }}" class="block font-label-md text-label-md text-on-surface-variant uppercase mb-1">Additional Notes:</label>
+                    <div class="mt-1">
+                        {{ form.notes }}
+                    </div>
+                    {% if form.notes.errors %}
+                    <p class="mt-2 text-sm text-error">{{ form.notes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-6 flex flex-col sm:flex-row items-center gap-4 border-t border-outline-variant/50">
+                    <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center px-8 py-3 rounded-md shadow-sm font-label-md text-label-md uppercase tracking-widest text-white bg-primary hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+                        Submit Decision
+                    </button>
+                    <a href="{% url 'judiciary:clerk_dashboard' %}" class="w-full sm:w-auto inline-flex justify-center items-center px-8 py-3 rounded-md font-label-md text-label-md uppercase tracking-widest text-on-surface-variant bg-surface border border-outline-variant hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for django rendered form fields to match Tailwind */
+    #decisionForm input[type="text"],
+    #decisionForm input[type="number"],
+    #decisionForm select,
+    #decisionForm textarea {
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid #c5c6cd;
+        background-color: #f8f9ff;
+        color: #0b1c30;
+        padding: 0.75rem 1rem;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        transition: all 0.2s;
+    }
+    #decisionForm input[type="text"]:focus,
+    #decisionForm input[type="number"]:focus,
+    #decisionForm select:focus,
+    #decisionForm textarea:focus {
+        outline: none;
+        border-color: #091426;
+        box-shadow: 0 0 0 2px #d8e3fb;
+    }
+    #outcome-radios ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin: 0;
+    }
+    #outcome-radios ul li {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    #outcome-radios ul li label {
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+    }
+    #outcome-radios ul li input[type="radio"] {
+        margin-right: 0.75rem;
+        height: 1.25rem;
+        width: 1.25rem;
+        color: #091426;
+        border-color: #75777d;
+        background-color: #f8f9ff;
+    }
+    #outcome-radios ul li input[type="radio"]:focus {
+        box-shadow: 0 0 0 2px #d8e3fb;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const outcomeRadios = document.querySelectorAll('input[name="outcome"]');
+        const bailSection = document.getElementById('bailDetailsSection');
+
+        function toggleBailSection() {
+            let isBailGranted = false;
+            outcomeRadios.forEach(radio => {
+                if (radio.checked && radio.value === 'BAIL_GRANTED') {
+                    isBailGranted = true;
+                }
+            });
+            bailSection.style.display = isBailGranted ? 'block' : 'none';
+        }
+
+        toggleBailSection();
+
+        outcomeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleBailSection);
+        });
+    });
+</script>
+{% endblock %}
