@@ -207,10 +207,10 @@
 </div>
 </div>
 <div class="mt-8 pt-8 border-t border-slate-100 flex justify-end">
-<button class="flex items-center gap-2 text-primary font-label-md text-label-md hover:underline decoration-2 underline-offset-4">
+<a href="{% url 'judiciary:inmate_timeline' case_details.inmate_number %}" class="flex items-center gap-2 text-primary font-label-md text-label-md group">
 <span class="material-symbols-outlined text-[18px]">visibility</span>
-                        VIEW FULL TIMELINE
-                    </button>
+<span class="group-hover:underline decoration-2 underline-offset-4">VIEW FULL TIMELINE</span>
+                    </a>
 </div>
 </div>
             {% elif search_query %}

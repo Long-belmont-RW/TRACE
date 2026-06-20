@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from apps.accounts.mixins import RoleRequiredMixin
+from apps.custody.models import Inmate
 from .models import CourtCase, HearingLog
 from .forms import LogDecisionForm
 from . import services
@@ -98,8 +99,26 @@ class LawyerPortalView(LoginRequiredMixin, RoleRequiredMixin, ListView):
                 'case_status': case.get_status_display().upper(),
                 'custody_location': case.inmate.facility.name if case.inmate.facility else 'N/A',
                 'next_court_date': case.next_court_date,
+                'inmate_number': case.inmate.inmate_number,
             }
         else:
             context['case_found'] = False
+        return context
+
+class InmateTimelineView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
+    template_name = 'judiciary/timeline.html'
+    allowed_roles = ['LAWYER']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        inmate_number = self.kwargs['inmate_number']
+        inmate = get_object_or_404(Inmate, inmate_number=inmate_number)
+        
+        hearing_logs = HearingLog.objects.filter(
+            case__inmate=inmate
+        ).select_related('case').order_by('-hearing_date')
+        
+        context['inmate'] = inmate
+        context['hearing_logs'] = hearing_logs
         return context
 

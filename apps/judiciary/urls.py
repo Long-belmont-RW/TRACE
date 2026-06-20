@@ -9,4 +9,5 @@ urlpatterns = [
     path('decision-success/', views.DecisionSuccessView.as_view(), name='decision_success'),
     path('decisions-log/', views.DecisionsLogView.as_view(), name='decisions_log'),
     path('lawyer-portal/', views.LawyerPortalView.as_view(), name='lawyer_portal'),
+    path('timeline/<str:inmate_number>/', views.InmateTimelineView.as_view(), name='inmate_timeline'),
 ]
