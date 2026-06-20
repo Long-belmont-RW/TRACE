@@ -11,6 +11,11 @@ class LogDecisionForm(forms.ModelForm):
             'notes': forms.Textarea(attrs={'rows': 4}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'outcome' in self.fields:
+            self.fields['outcome'].choices = [c for c in self.fields['outcome'].choices if c[0]]
+
     def clean(self):
         cleaned_data = super().clean()
         outcome = cleaned_data.get("outcome")
