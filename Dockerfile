@@ -31,6 +31,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . /app/
 
 # Collect static files
+ENV SECRET_KEY="dummy-key-for-build-purposes"
 RUN python manage.py collectstatic --noinput
 
 # Expose port
