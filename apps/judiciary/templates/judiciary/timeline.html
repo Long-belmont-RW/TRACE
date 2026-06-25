@@ -130,10 +130,10 @@
 <span class="text-on-primary-container font-label-md text-label-md hidden md:block">Event Timeline Portal</span>
 </div>
 <div class="flex items-center space-x-4">
-<button class="p-2 text-on-primary-container hover:text-on-primary transition-all active:scale-95">
+<a class="p-2 text-on-primary-container hover:text-on-primary transition-all active:scale-95 inline-flex items-center" href="?export=pdf" title="Export PDF">
 <span class="material-symbols-outlined" data-icon="print">print</span>
-</button>
-<button class="p-2 text-on-primary-container hover:text-on-primary transition-all active:scale-95">
+</a>
+<button class="p-2 text-on-primary-container hover:text-on-primary transition-all active:scale-95" onclick="navigator.clipboard.writeText(window.location.href); alert('Secure link copied to clipboard!');" title="Share Link">
 <span class="material-symbols-outlined" data-icon="share">share</span>
 </button>
 <div class="h-8 w-8 rounded-full bg-on-primary-container/20 flex items-center justify-center border border-on-primary-container/30">
@@ -147,7 +147,7 @@
 <div class="p-container-padding max-w-5xl mx-auto w-full">
 <!-- Breadcrumb / Back Link -->
 <div class="mb-8">
-<a class="flex items-center text-primary font-label-md text-label-md group" href="{% url 'judiciary:lawyer_portal' %}">
+<a class="flex items-center text-primary font-label-md text-label-md group" href="{% url 'judiciary:lawyer_portal' %}{% if request.GET.q %}?q={{ request.GET.q }}{% endif %}">
 <span class="material-symbols-outlined mr-2 transition-transform group-hover:-translate-x-1" data-icon="arrow_back">arrow_back</span>
                     Back to Case Management
                 </a>

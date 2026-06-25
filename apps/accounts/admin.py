@@ -19,7 +19,7 @@ class CustomUserAdmin(UserAdmin):
     # Required for custom user models using email as username
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name', 'phone_number', 'bar_id', 'role')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'phone_number', 'bar_id', 'role', 'facility')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
@@ -27,7 +27,7 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'role'),
+            'fields': ('email', 'role', 'last_name', 'first_name'),
         }),
     )
 

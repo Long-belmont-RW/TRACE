@@ -20,6 +20,16 @@
                 {% csrf_token %}
                 
                 <div>
+                    <label for="{{ form.hearing_date.id_for_label }}" class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2">Hearing Date & Time:</label>
+                    <div class="mt-1">
+                        {{ form.hearing_date }}
+                    </div>
+                    {% if form.hearing_date.errors %}
+                    <p class="mt-2 text-sm text-error">{{ form.hearing_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
                     <label class="block font-label-md text-label-md text-on-surface-variant uppercase mb-2">Outcome:</label>
                     <div class="mt-2 font-body-md space-y-2" id="outcome-radios">
                         {{ form.outcome }}

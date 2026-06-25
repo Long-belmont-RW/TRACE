@@ -1,0 +1,78 @@
+{% extends 'custody/ncos_base.html' %}
+{% load static %}
+
+{% block content %}
+<header class="mb-stack-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-6">
+    <div>
+        <h2 class="font-display-lg text-display-lg font-bold text-on-surface">Global Omni-Search Results</h2>
+        {% if q %}
+            <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Showing nationwide search matches for query: <span class="font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">"{{ q }}"</span></p>
+        {% else %}
+            <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Displaying nationwide detainee registry.</p>
+        {% endif %}
+    </div>
+    <div class="flex items-center gap-2 bg-surface-container-low border border-outline-variant px-4 py-2 rounded-xl shadow-sm">
+        <span class="material-symbols-outlined text-primary">manage_search</span>
+        <span class="font-label-md text-on-surface font-semibold">{{ inmates|length }} Result{{ inmates|length|pluralize }}</span>
+    </div>
+</header>
+
+<!-- Matched Inmates Table -->
+<div class="bg-surface-container-lowest border border-outline-variant shadow-sm rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Inmate Number</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Full Name</th>
+                    <th class="px-gutter py-4 font-label-md text-primary font-bold uppercase tracking-wider bg-primary/5 border-x border-primary/10">Facility Location</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">State</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Date Admitted</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/60 font-body-md text-body-md">
+                {% for inmate in inmates %}
+                <tr class="hover:bg-surface-container-low/60 transition-colors group">
+                    <td class="px-gutter py-4 font-mono text-sm font-bold text-primary">{{ inmate.inmate_number }}</td>
+                    <td class="px-gutter py-4 font-semibold text-on-surface">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs shadow-sm">
+                                {{ inmate.first_name|first }}{{ inmate.last_name|first }}
+                            </div>
+                            <span>{{ inmate.last_name }}, {{ inmate.first_name }}</span>
+                        </div>
+                    </td>
+                    <!-- CRITICAL: Facility Location Column -->
+                    <td class="px-gutter py-4 font-bold text-on-surface bg-primary/5 border-x border-primary/10">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">location_on</span>
+                            <span>{{ inmate.facility.name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-gutter py-4">
+                        <span class="px-2 py-1 rounded bg-secondary-container text-on-secondary-container font-bold text-xs">{{ inmate.facility.state }}</span>
+                    </td>
+                    <td class="px-gutter py-4 text-on-surface-variant font-medium">{{ inmate.admission_date|date:"b d, Y" }}</td>
+                    <td class="px-gutter py-4">
+                        <a href="{% url 'custody:ncos_facility_inmates' inmate.facility.id %}" class="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary-fixed/60 hover:bg-primary-fixed px-3 py-1.5 rounded-lg transition-colors shadow-sm">
+                            <span class="material-symbols-outlined text-sm">open_in_new</span> View Roster
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-gutter py-16 text-center text-on-surface-variant">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-5xl text-outline mb-1">search_off</span>
+                            <p class="font-bold text-lg text-on-surface">No Inmates Found Matching "{{ q }}"</p>
+                            <span class="text-sm text-on-surface-variant">Try searching by partial inmate ID number or first/last name.</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

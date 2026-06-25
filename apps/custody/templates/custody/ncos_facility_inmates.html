@@ -1,0 +1,87 @@
+{% extends 'custody/ncos_base.html' %}
+{% load static %}
+
+{% block content %}
+<header class="mb-stack-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-6">
+    <div>
+        <div class="flex items-center gap-2 mb-2">
+            <a href="{% url 'custody:ncos_facility_directory' %}" class="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> Facility Directory
+            </a>
+            <span class="text-outline-variant">/</span>
+            <span class="text-xs font-bold text-on-surface-variant">{{ facility.state }}</span>
+        </div>
+        <h2 class="font-display-lg text-display-lg font-bold text-on-surface">Showing Inmates for {{ facility.name }}</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Complete detainee roster and court event tracking for this facility.</p>
+    </div>
+    <div class="flex items-center gap-2 bg-surface-container-low border border-outline-variant px-4 py-2 rounded-xl shadow-sm">
+        <span class="material-symbols-outlined text-primary">groups</span>
+        <span class="font-label-md text-on-surface font-semibold">{{ inmates|length }} Inmate{{ inmates|length|pluralize }}</span>
+    </div>
+</header>
+
+<!-- Inmates Table -->
+<div class="bg-surface-container-lowest border border-outline-variant shadow-sm rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Inmate ID</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Name</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Date Admitted</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Active Status</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Next Court Hearing</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/60 font-body-md text-body-md">
+                {% for inmate in inmates %}
+                <tr class="hover:bg-surface-container-low/60 transition-colors group">
+                    <td class="px-gutter py-4 font-mono text-sm font-bold text-primary">{{ inmate.inmate_number }}</td>
+                    <td class="px-gutter py-4 font-semibold text-on-surface">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs shadow-sm">
+                                {{ inmate.first_name|first }}{{ inmate.last_name|first }}
+                            </div>
+                            <span>{{ inmate.last_name }}, {{ inmate.first_name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-gutter py-4 text-on-surface-variant font-medium">{{ inmate.admission_date|date:"b d, Y" }}</td>
+                    <td class="px-gutter py-4">
+                        {% if inmate.is_active %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary-container/60 text-on-secondary-container font-bold text-xs">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> In Custody
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-bold text-xs">
+                                Discharged
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-gutter py-4">
+                        {% with next_case=inmate.cases.first %}
+                            {% if next_case and next_case.next_court_date %}
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-fixed text-on-primary-fixed text-xs font-bold rounded-lg shadow-sm">
+                                    <span class="material-symbols-outlined text-[14px]">event</span>
+                                    {{ next_case.next_court_date|date:"b d, Y H:i" }}
+                                </span>
+                            {% else %}
+                                <span class="text-on-surface-variant italic text-xs">No scheduled hearing</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-gutter py-12 text-center text-on-surface-variant">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-4xl text-outline">person_off</span>
+                            <p class="font-semibold text-base">No inmates held in this facility.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

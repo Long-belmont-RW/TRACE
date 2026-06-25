@@ -1,13 +1,17 @@
 import datetime
-from django.views.generic import ListView, FormView, TemplateView
+from django.views.generic import ListView, FormView, TemplateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from apps.accounts.mixins import RoleRequiredMixin
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from apps.accounts.mixins import RoleRequiredMixin, role_required
 from apps.custody.models import Inmate
 from .models import CourtCase, HearingLog
-from .forms import LogDecisionForm
+from .forms import LogDecisionForm, ScheduleHearingForm
 from . import services
 
 class TodaysHearingsView(LoginRequiredMixin, RoleRequiredMixin, ListView):
@@ -17,7 +21,10 @@ class TodaysHearingsView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     context_object_name = 'cases'
 
     def get_queryset(self):
-        return CourtCase.objects.filter(next_court_date=datetime.date.today())
+        return CourtCase.objects.filter(
+            court=self.request.user.court,
+            next_court_date__contains=str(datetime.date.today())
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -32,7 +39,7 @@ class TodaysHearingsView(LoginRequiredMixin, RoleRequiredMixin, ListView):
         context['adjourned_hearings'] = HearingLog.objects.filter(
             case__in=today_cases,
             outcome='ADJOURNED',
-            hearing_date__date=datetime.date.today()
+            hearing_date__contains=str(datetime.date.today())
         ).count()
         return context
 
@@ -66,7 +73,7 @@ class DecisionsLogView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     context_object_name = 'logs'
 
     def get_queryset(self):
-        return HearingLog.objects.filter(clerk=self.request.user).order_by('-hearing_date')
+        return HearingLog.objects.filter(case__court=self.request.user.court).order_by('-hearing_date')
 
 class LawyerPortalView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     model = CourtCase
@@ -109,6 +116,27 @@ class InmateTimelineView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
     template_name = 'judiciary/timeline.html'
     allowed_roles = ['LAWYER']
 
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        if request.GET.get('export') == 'pdf':
+            try:
+                import weasyprint
+            except (ImportError, OSError) as e:
+                from django.http import HttpResponseServerError
+                return HttpResponseServerError(
+                    "PDF generation is currently unavailable because the required OS-level dependencies "
+                    "(GTK3, Pango, Cairo) are not installed or not in the system PATH. <br><br>"
+                    "Please install GTK3 for Windows to enable this feature.<br><br>"
+                    f"Technical details: {e}"
+                )
+            rendered_html = render_to_string('judiciary/pdf_timeline_export.html', context, request=request)
+            pdf_file = weasyprint.HTML(string=rendered_html).write_pdf()
+            response = HttpResponse(pdf_file, content_type='application/pdf')
+            inmate_number = context['inmate'].inmate_number
+            response['Content-Disposition'] = f'attachment; filename="timeline_{inmate_number}.pdf"'
+            return response
+        return self.render_to_response(context)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         inmate_number = self.kwargs['inmate_number']
@@ -121,4 +149,89 @@ class InmateTimelineView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
         context['inmate'] = inmate
         context['hearing_logs'] = hearing_logs
         return context
+
+
+@method_decorator(role_required('COURT_CLERK'), name='dispatch')
+class ScheduleHearingView(LoginRequiredMixin, RoleRequiredMixin, FormView):
+    template_name = 'judiciary/schedule_hearing.html'
+    form_class = ScheduleHearingForm
+    allowed_roles = ['COURT_CLERK']
+    success_url = reverse_lazy('judiciary:clerk_dashboard')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['court'] = self.request.user.court
+        return kwargs
+
+    def form_valid(self, form):
+        case = form.cleaned_data['case']
+        case.next_court_date = form.cleaned_data['next_court_date']
+        case.save()
+        messages.success(self.request, "Hearing scheduled successfully.")
+        return super().form_valid(form)
+
+
+@method_decorator(role_required('COURT_CLERK'), name='dispatch')
+class ClerkBatchExportView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ['COURT_CLERK']
+
+    def get(self, request, *args, **kwargs):
+        try:
+            import weasyprint
+        except (ImportError, OSError) as e:
+            from django.http import HttpResponseServerError
+            return HttpResponseServerError(
+                "PDF generation is currently unavailable because the required OS-level dependencies "
+                "(GTK3, Pango, Cairo) are not installed or not in the system PATH. <br><br>"
+                "Please install GTK3 for Windows to enable this feature.<br><br>"
+                f"Technical details: {e}"
+            )
+
+        cases = CourtCase.objects.filter(
+            court=request.user.court,
+            next_court_date__contains=str(datetime.date.today())
+        ).select_related('inmate')
+        
+        context = {
+            'cases': cases,
+            'court': request.user.court,
+            'today': datetime.date.today(),
+        }
+        rendered_html = render_to_string('judiciary/pdf_docket_export.html', context, request=request)
+        pdf_file = weasyprint.HTML(string=rendered_html).write_pdf()
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="daily_docket.pdf"'
+        return response
+
+
+class ClerkDecisionsExportView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ['COURT_CLERK']
+
+    def get(self, request, *args, **kwargs):
+        try:
+            import weasyprint
+        except (ImportError, OSError) as e:
+            from django.http import HttpResponseServerError
+            return HttpResponseServerError(
+                "PDF generation is currently unavailable because the required OS-level dependencies "
+                "(GTK3, Pango, Cairo) are not installed or not in the system PATH. <br><br>"
+                "Please install GTK3 for Windows to enable this feature.<br><br>"
+                f"Technical details: {e}"
+            )
+
+        logs = HearingLog.objects.filter(
+            case__court=request.user.court
+        ).select_related('case', 'case__inmate', 'clerk').order_by('-hearing_date')
+        
+        context = {
+            'logs': logs,
+            'court': request.user.court,
+            'today': datetime.date.today(),
+        }
+        rendered_html = render_to_string('judiciary/pdf_decisions_export.html', context, request=request)
+        pdf_file = weasyprint.HTML(string=rendered_html).write_pdf()
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="decisions_log.pdf"'
+        return response
+
 

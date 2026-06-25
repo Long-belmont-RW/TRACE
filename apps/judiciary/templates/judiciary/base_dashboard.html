@@ -142,14 +142,19 @@
             <!-- Navigation Links -->
             <nav class="flex-1 space-y-1">
                 <!-- Dashboard (Cases) -->
-                <a class="flex items-center gap-3 px-4 py-3 border-l-2 border-primary-fixed text-primary-fixed font-semibold bg-primary-container group relative" href="{% url 'judiciary:clerk_dashboard' %}">
+                <a class="flex items-center gap-3 px-4 py-3 {% if request.resolver_match.url_name == 'clerk_dashboard' or request.resolver_match.url_name == 'lawyer_search' or request.resolver_match.url_name == 'schedule_hearing' or request.resolver_match.url_name == 'log_decision' %}border-l-2 border-primary-fixed text-primary-fixed font-semibold bg-primary-container{% else %}text-on-primary-container hover:bg-on-primary-fixed-variant transition-colors{% endif %} group relative" href="{% url 'judiciary:clerk_dashboard' %}">
                     <span class="material-symbols-outlined" data-icon="assignment">assignment</span>
                     <span class="font-label-md text-label-md">Cases</span>
                 </a>
                 <!-- Decisions Log -->
-                <a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant transition-colors group" href="{% url 'judiciary:decisions_log' %}">
+                <a class="flex items-center gap-3 px-4 py-3 {% if request.resolver_match.url_name == 'decisions_log' or request.resolver_match.url_name == 'export_decisions_log' %}border-l-2 border-primary-fixed text-primary-fixed font-semibold bg-primary-container{% else %}text-on-primary-container hover:bg-on-primary-fixed-variant transition-colors{% endif %} group" href="{% url 'judiciary:decisions_log' %}">
                     <span class="material-symbols-outlined" data-icon="assessment">assessment</span>
                     <span class="font-label-md text-label-md">Decisions Log</span>
+                </a>
+                <!-- Profile -->
+                <a class="flex items-center gap-3 px-4 py-3 {% if request.resolver_match.url_name == 'user_profile' %}border-l-2 border-primary-fixed text-primary-fixed font-semibold bg-primary-container{% else %}text-on-primary-container hover:bg-on-primary-fixed-variant transition-colors{% endif %} group" href="{% url 'accounts:user_profile' %}">
+                    <span class="material-symbols-outlined" data-icon="person">person</span>
+                    <span class="font-label-md text-label-md">Profile</span>
                 </a>
             </nav>
             <!-- Footer Section -->

@@ -1,0 +1,84 @@
+{% extends 'accounts/superadmin_base.html' %}
+
+{% block title %}Add New User - TRACE Superadmin{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="mb-6">
+        <a href="{% url 'accounts:superadmin_users_list' %}" class="inline-flex items-center text-primary hover:underline mb-2 font-label-md text-label-md">
+            <span class="material-symbols-outlined mr-1 text-[18px]">arrow_back</span> Back to User Accounts
+        </a>
+        <h3 class="font-headline-md text-headline-md text-on-surface">Provision New Account</h3>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">Create a direct user account bypassing Django admin with automated password encryption.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg p-8">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="p-4 rounded-lg bg-red-100 text-red-800 border border-red-200 font-label-md text-label-md">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for field in form %}
+                <div class="{% if field.name == 'email' or field.name == 'role' %}col-span-1 md:col-span-2{% endif %} flex flex-col">
+                    <label for="{{ field.id_for_label }}" class="font-label-md text-label-md text-on-surface mb-1.5 flex items-center justify-between">
+                        <span>{{ field.label }}</span>
+                        {% if field.field.required %}
+                        <span class="text-error text-xs font-normal">*Required</span>
+                        {% endif %}
+                    </label>
+                    <div class="mt-1">
+                        {{ field }}
+                    </div>
+                    {% if field.help_text %}
+                    <p class="mt-1.5 text-xs text-on-surface-variant leading-relaxed">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="mt-1 text-xs text-error font-semibold">
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="pt-6 border-t border-outline-variant flex justify-end gap-4">
+                <a href="{% url 'accounts:superadmin_users_list' %}" class="px-6 py-2.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-all flex items-center">
+                    Cancel
+                </a>
+                <button type="submit" class="px-8 py-2.5 rounded-lg bg-primary text-on-primary hover:opacity-90 active:scale-95 shadow-md font-label-md text-label-md transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">person_add</span>
+                    Create Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Styling Django form inputs inside template */
+    form input[type="text"], form input[type="email"], form input[type="password"], form select {
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid #c5c6cd;
+        background-color: #ffffff;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+        color: #0b1c30;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    form input[type="text"]:focus, form input[type="email"]:focus, form input[type="password"]:focus, form select:focus {
+        border-color: #091426;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(9, 20, 38, 0.15);
+    }
+</style>
+{% endblock %}

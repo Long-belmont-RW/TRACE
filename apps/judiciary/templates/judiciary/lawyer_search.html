@@ -207,7 +207,7 @@
 </div>
 </div>
 <div class="mt-8 pt-8 border-t border-slate-100 flex justify-end">
-<a href="{% url 'judiciary:inmate_timeline' case_details.inmate_number %}" class="flex items-center gap-2 text-primary font-label-md text-label-md group">
+<a href="{% url 'judiciary:inmate_timeline' case_details.inmate_number %}?q={{ search_query }}" class="flex items-center gap-2 text-primary font-label-md text-label-md group">
 <span class="material-symbols-outlined text-[18px]">visibility</span>
 <span class="group-hover:underline decoration-2 underline-offset-4">VIEW FULL TIMELINE</span>
                     </a>
@@ -226,7 +226,7 @@
 </div>
             {% else %}
             <!-- Initial State / Placeholder -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 opacity-60">
+<!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4 opacity-60">
 <div class="p-6 bg-white border border-slate-200 rounded-lg flex flex-col items-center text-center">
 <span class="material-symbols-outlined text-primary mb-3">gavel</span>
 <span class="font-label-md text-label-md text-primary">Verify Status</span>
@@ -239,7 +239,7 @@
 <span class="material-symbols-outlined text-primary mb-3">assignment_late</span>
 <span class="font-label-md text-label-md text-primary">Monitor Alerts</span>
 </div>
-</div>
+</div> -->
             {% endif %}
 
         </div>

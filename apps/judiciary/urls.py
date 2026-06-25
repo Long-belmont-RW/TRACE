@@ -10,4 +10,7 @@ urlpatterns = [
     path('decisions-log/', views.DecisionsLogView.as_view(), name='decisions_log'),
     path('lawyer-portal/', views.LawyerPortalView.as_view(), name='lawyer_portal'),
     path('timeline/<str:inmate_number>/', views.InmateTimelineView.as_view(), name='inmate_timeline'),
+    path('clerk/schedule/', views.ScheduleHearingView.as_view(), name='schedule_hearing'),
+    path('clerk/export/docket/', views.ClerkBatchExportView.as_view(), name='export_docket'),
+    path('clerk/export/decisions/', views.ClerkDecisionsExportView.as_view(), name='export_decisions_log'),
 ]

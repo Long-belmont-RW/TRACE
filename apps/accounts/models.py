@@ -29,6 +29,7 @@ class User(AbstractUser):
         ('FACILITY_COMMANDER', 'Facility Commander'),
         ('NCOS_MANAGEMENT', 'NCoS Management'),
         ('LAWYER', 'Lawyer'),
+        ('SUPERADMIN', 'Superadmin'),
     ]
     username = None
     
@@ -36,6 +37,8 @@ class User(AbstractUser):
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     bar_id = models.CharField(max_length=50, null=True, blank=True)
+    facility = models.ForeignKey('custody.Facility', on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_officers')
+    court = models.ForeignKey('judiciary.Court', on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_clerks')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

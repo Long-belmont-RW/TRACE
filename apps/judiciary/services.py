@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 from .models import HearingLog, CourtCase
 from .signals import hearing_log_created_signal
 
@@ -17,7 +18,8 @@ def process_new_hearing_log(case_id, clerk, form_data):
             outcome=form_data['outcome'],
             bail_amount=form_data.get('bail_amount'),
             bail_conditions=form_data.get('bail_conditions'),
-            notes=form_data.get('notes', '')
+            notes=form_data.get('notes', ''),
+            hearing_date=form_data.get('hearing_date') or timezone.now()
         )
         
         # Update case status if outcome is DISMISSED or SENTENCED

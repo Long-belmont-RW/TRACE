@@ -1,0 +1,94 @@
+{% extends 'custody/base_dashboard.html' %}
+{% block content %}
+<div class="mb-stack-lg">
+    <h2 class="font-display-lg text-display-lg font-bold text-on-surface">Reports & Audit Trail</h2>
+    <p class="font-body-md text-on-surface-variant mt-2">View and export system alerts and overdue cases for your facility.</p>
+</div>
+
+<!-- Filter Bar -->
+<div class="bg-surface-container-lowest border border-outline-variant p-gutter shadow-sm mb-stack-lg rounded">
+    <form method="GET" class="flex flex-wrap gap-4 items-end" id="filter-form">
+        <div class="flex-1 min-w-[200px]">
+            <label class="font-label-sm text-on-surface-variant uppercase tracking-wider block mb-2">Status</label>
+            <select name="status" class="w-full border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded text-body-md">
+                <option value="">All Statuses</option>
+                <option value="resolved" {% if current_status == 'resolved' %}selected{% endif %}>Resolved</option>
+                <option value="escalated" {% if current_status == 'escalated' %}selected{% endif %}>Escalated</option>
+            </select>
+        </div>
+        <div class="flex-1 min-w-[200px]">
+            <label class="font-label-sm text-on-surface-variant uppercase tracking-wider block mb-2">Start Date</label>
+            <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="w-full border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded text-body-md">
+        </div>
+        <div class="flex-1 min-w-[200px]">
+            <label class="font-label-sm text-on-surface-variant uppercase tracking-wider block mb-2">End Date</label>
+            <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="w-full border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded text-body-md">
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="submit" class="bg-primary text-white px-6 py-2 rounded font-semibold hover:bg-primary-container transition-colors shadow-sm">Filter</button>
+            <a href="{% url 'custody:facility_reports' %}" class="px-6 py-2 border border-outline-variant text-on-surface font-semibold hover:bg-surface-container-low transition-colors rounded">Clear</a>
+        </div>
+    </form>
+</div>
+
+<!-- Export Actions -->
+<div class="flex justify-end gap-4 mb-4">
+    <button onclick="exportData('csv')" class="flex items-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-semibold hover:bg-surface-container-low transition-colors rounded">
+        <span class="material-symbols-outlined text-sm" data-icon="download">download</span> EXPORT CSV
+    </button>
+    <button onclick="exportData('pdf')" class="flex items-center gap-2 px-4 py-2 bg-secondary text-white font-semibold hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded shadow-sm">
+        <span class="material-symbols-outlined text-sm" data-icon="picture_as_pdf">picture_as_pdf</span> EXPORT PDF
+    </button>
+</div>
+
+<!-- Reports Table -->
+<div class="bg-surface-container-lowest border border-outline-variant shadow-sm mb-stack-lg rounded">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low">
+                <tr>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Date Flagged</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Inmate Name</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Inmate ID</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Alert Type</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant">
+                {% for alert in alerts %}
+                <tr class="hover:bg-surface-container-low transition-colors">
+                    <td class="px-gutter py-4 text-on-surface-variant">{{ alert.date_flagged|date:"Y-m-d H:i" }}</td>
+                    <td class="px-gutter py-4 font-semibold text-on-surface">{{ alert.inmate.first_name }} {{ alert.inmate.last_name }}</td>
+                    <td class="px-gutter py-4 text-on-surface-variant">{{ alert.inmate.inmate_number }}</td>
+                    <td class="px-gutter py-4 text-on-surface-variant">{{ alert.alert_type }}</td>
+                    <td class="px-gutter py-4">
+                        {% if alert.is_resolved %}
+                            <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-[10px] font-bold rounded">RESOLVED</span>
+                        {% elif alert.is_escalated %}
+                            <span class="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 text-[10px] font-bold rounded">ESCALATED</span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 text-[10px] font-bold rounded">ACTIVE</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-gutter py-8 text-center text-on-surface-variant">No records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function exportData(format) {
+        const form = document.getElementById('filter-form');
+        const urlParams = new URLSearchParams(new FormData(form));
+        urlParams.set('export', format);
+        window.location.href = "{% url 'custody:facility_reports' %}?" + urlParams.toString();
+    }
+</script>
+{% endblock %}

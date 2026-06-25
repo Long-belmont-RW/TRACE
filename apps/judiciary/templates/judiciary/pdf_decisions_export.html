@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Decisions Log Export</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1a1a1a; font-size: 10pt; line-height: 1.4; }
+        .header { border-bottom: 2px solid #0b1c30; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h1 { color: #0b1c30; margin: 0 0 5px 0; font-size: 20pt; text-transform: uppercase; }
+        .meta-table { width: 100%; margin-bottom: 25px; font-size: 11pt; }
+        .meta-label { font-weight: bold; color: #444; width: 140px; }
+        .docket-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .docket-table th, .docket-table td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
+        .docket-table th { background-color: #f0f2f5; color: #0b1c30; font-weight: bold; text-transform: uppercase; font-size: 8.5pt; }
+        .status-badge { font-weight: bold; padding: 2px 5px; border-radius: 3px; font-size: 8pt; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Decisions Log History</h1>
+        <p>Official Record of Court Hearing Outcomes</p>
+    </div>
+
+    <table class="meta-table">
+        <tr>
+            <td class="meta-label">Court:</td><td>{{ court.name }} ({{ court.get_court_type_display }})</td>
+            <td class="meta-label">Export Date:</td><td>{{ today|date:"F j, Y" }}</td>
+        </tr>
+        <tr>
+            <td class="meta-label">State Jurisdiction:</td><td>{{ court.get_state_display }}</td>
+            <td class="meta-label">Total Decisions:</td><td>{{ logs.count }}</td>
+        </tr>
+    </table>
+
+    {% if logs %}
+    <table class="docket-table">
+        <thead>
+            <tr><th>#</th><th>Date & Time</th><th>Case Number</th><th>Inmate</th><th>Outcome</th><th>Bail Amount</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td style="white-space: nowrap;">{{ log.hearing_date|date:"Y-m-d H:i" }}</td>
+                <td><strong>{{ log.case.case_number }}</strong></td>
+                <td>{{ log.case.inmate.first_name }} {{ log.case.inmate.last_name }}</td>
+                <td><span class="status-badge">{{ log.get_outcome_display }}</span></td>
+                <td>{% if log.bail_amount %}₦{{ log.bail_amount }}{% else %}-{% endif %}</td>
+                <td>{{ log.notes|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #666; font-style: italic; border: 1px dashed #ccc;">
+        No decision records found for {{ court.name }}.
+    </div>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,101 @@
+{% extends 'custody/ncos_base.html' %}
+{% load static %}
+
+{% block content %}
+<header class="mb-stack-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-6">
+    <div>
+        <h2 class="font-display-lg text-display-lg font-bold text-on-surface">National Facility Directory</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Hierarchical drill-down management for all NCoS correctional centers and command units.</p>
+    </div>
+    <div class="flex items-center gap-2 bg-surface-container-low border border-outline-variant px-4 py-2 rounded-xl shadow-sm">
+        <span class="material-symbols-outlined text-primary">domain</span>
+        <span class="font-label-md text-on-surface font-semibold">{{ facilities|length }} Correctional Facilit{{ facilities|length|pluralize:"y,ies" }}</span>
+    </div>
+</header>
+
+<!-- Facilities Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+    {% for facility in facilities %}
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(9,20,38,0.12)] hover:border-primary/40 transition-all duration-300 flex flex-col justify-between group">
+        <!-- Card Top -->
+        <div>
+            <div class="flex justify-between items-start gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-105 transition-transform">
+                        {{ facility.state }}
+                    </div>
+                    <div>
+                        <h3 class="font-headline-sm text-lg font-bold text-on-surface leading-tight group-hover:text-primary transition-colors">{{ facility.name }}</h3>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">State Code: {{ facility.state }}</span>
+                    </div>
+                </div>
+                {% if facility.active_alerts > 0 %}
+                    <span class="inline-flex items-center gap-1 bg-error-container text-on-error-container text-xs font-bold px-2.5 py-1 rounded-full animate-pulse">
+                        <span class="material-symbols-outlined text-[14px]">warning</span> {{ facility.active_alerts }} Alert{{ facility.active_alerts|pluralize }}
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center gap-1 bg-secondary-container/50 text-on-secondary-container text-xs font-bold px-2.5 py-1 rounded-full">
+                        <span class="material-symbols-outlined text-[14px]">check_circle</span> Stable
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Commander Info -->
+            <div class="bg-surface-container-low/60 rounded-xl p-3 mb-6 border border-outline-variant/50 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">
+                    <span class="material-symbols-outlined text-sm">shield_person</span>
+                </div>
+                <div class="overflow-hidden">
+                    <span class="text-[11px] uppercase font-bold text-on-surface-variant block">Commanding Officer</span>
+                    {% if facility.commander %}
+                        <span class="text-sm font-semibold text-on-surface truncate block">{{ facility.commander.email }}</span>
+                    {% else %}
+                        <span class="text-sm font-semibold text-error italic block">Unassigned Commander</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/40">
+                    <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1">Total Inmates</span>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-xl">groups</span>
+                        <span class="text-2xl font-black text-on-surface">{{ facility.total_inmates }}</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant/40 {% if facility.active_alerts > 0 %}bg-error/5 border-error/20{% endif %}">
+                    <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-1">90-Day Flags</span>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined {% if facility.active_alerts > 0 %}text-error{% else %}text-secondary{% endif %} text-xl">flag</span>
+                        <span class="text-2xl font-black {% if facility.active_alerts > 0 %}text-error{% else %}text-on-surface{% endif %}">{{ facility.active_alerts }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drill-Down Buttons Row -->
+        <div class="grid grid-cols-3 gap-2 pt-4 border-t border-outline-variant/60">
+            <a href="{% url 'custody:ncos_facility_inmates' facility.id %}" class="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all text-center group/btn shadow-sm hover:shadow">
+                <span class="material-symbols-outlined text-base group-hover/btn:scale-110 transition-transform">badge</span>
+                <span class="text-[11px] font-bold">Inmates</span>
+            </a>
+            <a href="{% url 'custody:ncos_facility_cases' facility.id %}" class="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-highest text-on-surface hover:bg-secondary-container hover:text-on-secondary-container transition-all text-center group/btn border border-outline-variant/80">
+                <span class="material-symbols-outlined text-base group-hover/btn:scale-110 transition-transform">gavel</span>
+                <span class="text-[11px] font-bold">Cases</span>
+            </a>
+            <a href="{% url 'custody:ncos_facility_alerts' facility.id %}" class="flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-lg {% if facility.active_alerts > 0 %}bg-error text-on-error hover:bg-error-container hover:text-on-error-container{% else %}bg-surface-container-highest text-on-surface hover:bg-secondary-container hover:text-on-secondary-container{% endif %} transition-all text-center group/btn border border-outline-variant/80">
+                <span class="material-symbols-outlined text-base group-hover/btn:scale-110 transition-transform">notifications</span>
+                <span class="text-[11px] font-bold">Alerts</span>
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full bg-surface-container-lowest border border-outline-variant rounded-2xl p-12 text-center text-on-surface-variant">
+        <span class="material-symbols-outlined text-6xl text-outline mb-3">domain_disabled</span>
+        <h3 class="text-xl font-bold text-on-surface mb-1">No Facilities Found</h3>
+        <p>No correctional centers are registered in the TRACE database.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

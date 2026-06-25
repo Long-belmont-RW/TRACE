@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Official Legal Event Timeline</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1a1a1a; font-size: 10pt; line-height: 1.4; }
+        .header { border-bottom: 2px solid #0b1c30; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h1 { color: #0b1c30; margin: 0 0 5px 0; font-size: 18pt; text-transform: uppercase; }
+        .header p { margin: 0; color: #555; font-size: 11pt; }
+        .meta-table { width: 100%; margin-bottom: 25px; font-size: 11pt; background-color: #f8f9fa; padding: 12px; border: 1px solid #dee2e6; }
+        .meta-label { font-weight: bold; color: #444; width: 150px; }
+        .timeline-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .timeline-table th, .timeline-table td { border: 1px solid #ccc; padding: 10px; text-align: left; vertical-align: top; }
+        .timeline-table th { background-color: #f0f2f5; color: #0b1c30; font-weight: bold; text-transform: uppercase; font-size: 9pt; }
+        .outcome-badge { font-weight: bold; padding: 3px 6px; border-radius: 3px; font-size: 8.5pt; text-transform: uppercase; background-color: #e2e8f0; color: #1e293b; display: inline-block; }
+        .conditions { margin-top: 5px; font-size: 9.5pt; color: #475569; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TRACE System - Official Legal Event Timeline</h1>
+        <p>Unified Inmate Hearing & Case History Record</p>
+    </div>
+
+    <table class="meta-table">
+        <tr>
+            <td class="meta-label">Inmate Name:</td><td><strong>{{ inmate.first_name }} {{ inmate.last_name }}</strong></td>
+            <td class="meta-label">Inmate ID:</td><td><strong>{{ inmate.inmate_number }}</strong></td>
+        </tr>
+        <tr>
+            <td class="meta-label">Custody Location:</td><td colspan="3">{% if inmate.facility %}{{ inmate.facility.name }}{% else %}N/A{% endif %}</td>
+        </tr>
+    </table>
+
+    {% if hearing_logs %}
+    <table class="timeline-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Date</th>
+                <th style="width: 25%;">Court Case</th>
+                <th style="width: 20%;">Outcome</th>
+                <th style="width: 40%;">Bail Conditions & Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in hearing_logs %}
+            <tr>
+                <td style="white-space: nowrap;">{{ log.hearing_date|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <strong>Case #{{ log.case.case_number }}</strong><br>
+                    <span style="font-size: 9pt; color: #555;">{{ log.case.court.name|default:"N/A" }}</span>
+                </td>
+                <td><span class="outcome-badge">{{ log.get_outcome_display }}</span></td>
+                <td>
+                    {% if log.outcome == 'BAIL_GRANTED' %}
+                        {% if log.bail_amount %}<div><strong>Amount:</strong> ₦{{ log.bail_amount }}</div>{% endif %}
+                        {% if log.bail_conditions %}<div class="conditions"><strong>Conditions:</strong><br>{{ log.bail_conditions|linebreaksbr }}</div>{% endif %}
+                    {% else %}
+                        {{ log.notes|default:"-" }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #666; font-style: italic; border: 1px dashed #ccc;">
+        No hearing log events recorded for this inmate.
+    </div>
+    {% endif %}
+</body>
+</html>

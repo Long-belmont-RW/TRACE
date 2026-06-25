@@ -1,0 +1,68 @@
+{% extends 'custody/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="mb-stack-lg flex justify-between items-end">
+    <div>
+        <h2 class="font-display-lg text-display-lg font-bold text-on-surface">Facility Inmates</h2>
+        <p class="font-body-md text-on-surface-variant mt-2">Active roster and court hearing schedules for {{ request.user.facility.name }}</p>
+    </div>
+    <div class="bg-surface-container-low border border-outline-variant px-4 py-2 rounded shadow-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary" data-icon="groups">groups</span>
+        <span class="font-label-md text-on-surface">{{ inmates|length }} Inmate{{ inmates|length|pluralize }}</span>
+    </div>
+</div>
+
+<!-- Inmates Table -->
+<div class="bg-surface-container-lowest border border-outline-variant shadow-sm rounded overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Inmate ID</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Name</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Date Admitted</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Next Court Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant">
+                {% for inmate in inmates %}
+                <tr class="hover:bg-surface-container-low transition-colors group">
+                    <td class="px-gutter py-4 font-mono text-sm font-semibold text-primary">{{ inmate.inmate_number }}</td>
+                    <td class="px-gutter py-4 font-semibold text-on-surface">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">
+                                {{ inmate.first_name|first }}{{ inmate.last_name|first }}
+                            </div>
+                            <span>{{ inmate.last_name }}, {{ inmate.first_name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-gutter py-4 text-on-surface-variant">{{ inmate.admission_date|date:"b d, Y" }}</td>
+                    <td class="px-gutter py-4">
+                        {% with next_case=inmate.cases.first %}
+                            {% if next_case and next_case.next_court_date %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-secondary-fixed text-on-secondary-fixed text-xs font-semibold rounded">
+                                    <span class="material-symbols-outlined text-[14px]">event</span>
+                                    {{ next_case.next_court_date|date:"b d, Y H:i" }}
+                                </span>
+                            {% else %}
+                                <span class="text-on-surface-variant italic text-xs">No scheduled hearing</span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-gutter py-12 text-center text-on-surface-variant">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-4xl text-outline">person_off</span>
+                            <p class="font-semibold text-base">No inmates assigned to this facility.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

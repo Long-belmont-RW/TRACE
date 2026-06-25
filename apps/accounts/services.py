@@ -16,7 +16,7 @@ def get_dashboard_url_for_user(user):
     if not user.is_authenticated:
         return 'two_factor:login'
 
-    if user.is_superuser:
+    if user.is_superuser or getattr(user, 'role', None) == 'SUPERADMIN':
         return 'accounts:superadmin_dashboard'
 
     role = getattr(user, 'role', None)

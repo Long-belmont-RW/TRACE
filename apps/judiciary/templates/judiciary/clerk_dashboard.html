@@ -8,12 +8,12 @@
             <p class="font-body-md text-on-surface-variant">{% now "F j, Y" %} — Courtroom Efficiency Tracking</p>
         </div>
         <div class="flex gap-stack-sm">
-            <button class="bg-white border border-slate-200 px-4 py-2 rounded text-label-md font-semibold text-on-surface hover:bg-slate-50 transition-colors flex items-center gap-2">
+            <a href="{% url 'judiciary:schedule_hearing' %}" class="bg-white border border-slate-200 px-4 py-2 rounded text-label-md font-semibold text-on-surface hover:bg-slate-50 transition-colors flex items-center gap-2 inline-flex">
                 <span class="material-symbols-outlined text-[18px]">calendar_month</span> Schedule Hearing
-            </button>
-            <button class="bg-primary text-white px-4 py-2 rounded text-label-md font-semibold hover:opacity-90 transition-opacity flex items-center gap-2">
+            </a>
+            <a href="{% url 'judiciary:export_docket' %}" class="bg-primary text-white px-4 py-2 rounded text-label-md font-semibold hover:opacity-90 transition-opacity flex items-center gap-2 inline-flex">
                 <span class="material-symbols-outlined text-[18px]">print</span> Batch Export
-            </button>
+            </a>
         </div>
     </div>
 
@@ -110,8 +110,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-1.5 font-label-md text-primary">
                                     <span class="material-symbols-outlined text-[16px]">schedule</span>
-                                    <!-- Use a generic time or next_court_date since we don't have time field -->
-                                    09:00 AM
+                                    {{ hearing.next_court_date|date:"g:i A"|default:"TBD" }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 font-body-md text-on-surface">{{ hearing.court_name }}</td>

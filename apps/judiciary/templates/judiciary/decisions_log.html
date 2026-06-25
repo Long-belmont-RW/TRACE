@@ -8,6 +8,11 @@
             <h2 class="font-headline-md text-headline-md text-primary">My Decisions Log</h2>
             <p class="font-body-md text-on-surface-variant">History of all hearing logs submitted by you.</p>
         </div>
+        <div>
+            <a href="{% url 'judiciary:export_decisions_log' %}" class="bg-primary text-white px-4 py-2 rounded text-label-md font-semibold hover:opacity-90 transition-opacity flex items-center gap-2 inline-flex">
+                <span class="material-symbols-outlined text-[18px]">print</span> Export PDF
+            </a>
+        </div>
     </div>
 
     <!-- Hearings Table Card -->

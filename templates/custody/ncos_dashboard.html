@@ -1,0 +1,210 @@
+{% extends 'custody/ncos_base.html' %}
+{% load static %}
+
+{% block content %}
+<header class="mb-stack-md">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-stack-sm">NCoS Executive Analytics Portal</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">High-level overview of Nigerian Correctional Service facilities and tracking metrics.</p>
+</header>
+<!-- KPI Summary Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] flex flex-col gap-stack-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Pretrial Pop</span>
+<span class="material-symbols-outlined text-primary">groups</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-surface">{{ total_inmates_macro|default:"0" }}</div>
+<div class="font-label-sm text-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +2.4% vs last month
+                </div>
+</div>
+<!-- Card 2 -->
+<div class="bg-error-container border border-error/20 rounded-xl p-stack-md shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] flex flex-col gap-stack-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-error-container uppercase tracking-wider">Active 90-Day Flags</span>
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-error-container">{{ active_alerts_macro|default:"0" }}</div>
+<div class="font-label-sm text-label-sm text-error flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">priority_high</span> Critical Action Required
+                </div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] flex flex-col gap-stack-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Compliance Rate</span>
+<span class="material-symbols-outlined text-primary">verified</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-surface">{{ compliance_rate|default:"0" }}%</div>
+<div class="font-label-sm text-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +1.2% vs last month
+                </div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] flex flex-col gap-stack-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Active Facilities</span>
+<span class="material-symbols-outlined text-primary">location_city</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-surface">{{ facilities|length }}</div>
+<div class="font-label-sm text-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> All systems online
+                </div>
+</div>
+</div>
+<!-- Main Content Area: Chart & Table -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Chart Container -->
+<div class="lg:col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center mb-stack-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Overdue Detainees by Facility</h3>
+<button class="font-label-sm text-label-sm text-on-surface-variant border border-outline-variant px-3 py-1 rounded hover:bg-surface-variant transition-colors">Export Data</button>
+</div>
+<div class="w-full h-80">
+<canvas id="facilityChart" width="1360" height="480" style="display: block; box-sizing: border-box; height: 320px; width: 906.7px;"></canvas>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="lg:col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] overflow-hidden">
+<div class="p-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Facility Performance Matrix</h3>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">filter_list</span>
+<input id="facilitySearchInput" class="pl-9 pr-3 py-1 text-body-md border border-outline-variant rounded bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Filter facilities..." type="text">
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-outline-variant">
+<th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 font-semibold uppercase tracking-wider">Facility Name</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 font-semibold uppercase tracking-wider">State</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 font-semibold uppercase tracking-wider text-right">Total Inmates</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 font-semibold uppercase tracking-wider text-right">Overdue Flags</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 font-semibold uppercase tracking-wider">Commander Contact</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 font-semibold uppercase tracking-wider">Status</th>
+</tr>
+</thead>
+<tbody id="facilityTableBody" class="font-body-md text-body-md text-on-surface divide-y divide-surface-container-high">
+    {% for facility in facilities %}
+    <tr class="hover:bg-surface-container-low transition-colors h-[40px]">
+        <td class="py-2 px-4 font-medium">{{ facility.name }}</td>
+        <td class="py-2 px-4 text-on-surface-variant">{{ facility.state }}</td>
+        <td class="py-2 px-4 text-right">{{ facility.total_inmates }}</td>
+        <td class="py-2 px-4 text-right {% if facility.active_alerts > 0 %}text-error font-medium{% else %}text-on-surface-variant{% endif %}">{{ facility.active_alerts }}</td>
+        <td class="py-2 px-4 text-on-surface-variant">{% if facility.commander %}{{ facility.commander.email }}{% else %}N/A{% endif %}</td>
+        <td class="py-2 px-4">
+            {% if facility.active_alerts > 150 %}
+                <span class="bg-error-container text-on-error-container font-label-sm text-label-sm px-2 py-0.5 rounded">Critical</span>
+            {% elif facility.active_alerts > 50 %}
+                <span class="bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm px-2 py-0.5 rounded">Warning</span>
+            {% else %}
+                <span class="bg-surface-variant text-on-surface-variant font-label-sm text-label-sm px-2 py-0.5 rounded">Stable</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6" class="py-4 px-4 text-center text-on-surface-variant">No facilities found.</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ chart_data|json_script:"chart-data-id" }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chartData = JSON.parse(document.getElementById('chart-data-id').textContent);
+        const ctx = document.getElementById('facilityChart').getContext('2d');
+        
+        // Facility Search Filter
+        const searchInput = document.getElementById('facilitySearchInput');
+        const tableBody = document.getElementById('facilityTableBody');
+
+        if (searchInput && tableBody) {
+            searchInput.addEventListener('input', function(e) {
+                const term = e.target.value.toLowerCase();
+                const rows = tableBody.getElementsByTagName('tr');
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    // Skip the "No facilities found" row if present
+                    if (row.cells.length === 1) continue;
+                    
+                    const facilityNameCell = row.cells[0];
+                    if (facilityNameCell) {
+                        const name = facilityNameCell.textContent.toLowerCase();
+                        if (name.includes(term)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        }
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Overdue 90-Day Flags',
+                    data: chartData.data,
+                    backgroundColor: chartData.data.map(val => {
+                        if (val > 150) return '#ba1a1a'; // Critical
+                        if (val > 50) return '#d8e3fb'; // Warning
+                        return '#091426'; // Stable
+                    }),
+                    borderRadius: 4,
+                    barThickness: 32
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        titleFont: { family: 'Inter', size: 14 },
+                        bodyFont: { family: 'Inter', size: 14 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e5eeff',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#45474c'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#45474c'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

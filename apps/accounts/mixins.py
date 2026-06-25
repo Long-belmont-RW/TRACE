@@ -13,7 +13,7 @@ def role_required(*allowed_roles):
             if not request.user.is_authenticated:
                 from django.contrib.auth.views import redirect_to_login
                 return redirect_to_login(request.get_full_path())
-            if request.user.role not in allowed_roles:
+            if request.user.role not in allowed_roles and not ('SUPERADMIN' in allowed_roles and getattr(request.user, 'is_superuser', False)):
                 raise PermissionDenied("You do not have permission to access this resource.")
             return view_func(request, *args, **kwargs)
         return _wrapped_view
@@ -28,6 +28,6 @@ class RoleRequiredMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
-        if request.user.role not in self.allowed_roles:
+        if request.user.role not in self.allowed_roles and not ('SUPERADMIN' in self.allowed_roles and getattr(request.user, 'is_superuser', False)):
             raise PermissionDenied("You do not have permission to access this resource.")
         return super().dispatch(request, *args, **kwargs)

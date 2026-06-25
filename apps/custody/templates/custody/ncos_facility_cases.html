@@ -1,0 +1,91 @@
+{% extends 'custody/ncos_base.html' %}
+{% load static %}
+
+{% block content %}
+<header class="mb-stack-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-6">
+    <div>
+        <div class="flex items-center gap-2 mb-2">
+            <a href="{% url 'custody:ncos_facility_directory' %}" class="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> Facility Directory
+            </a>
+            <span class="text-outline-variant">/</span>
+            <span class="text-xs font-bold text-on-surface-variant">{{ facility.state }}</span>
+        </div>
+        <h2 class="font-display-lg text-display-lg font-bold text-on-surface">Showing Court Cases for {{ facility.name }}</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Active litigation dockets and hearing schedules for detainees held in this facility.</p>
+    </div>
+    <div class="flex items-center gap-2 bg-surface-container-low border border-outline-variant px-4 py-2 rounded-xl shadow-sm">
+        <span class="material-symbols-outlined text-primary">gavel</span>
+        <span class="font-label-md text-on-surface font-semibold">{{ cases|length }} Court Case{{ cases|length|pluralize }}</span>
+    </div>
+</header>
+
+<!-- Cases Table -->
+<div class="bg-surface-container-lowest border border-outline-variant shadow-sm rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Case Number</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Inmate</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Assigned Court</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Charge Summary</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Next Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/60 font-body-md text-body-md">
+                {% for case in cases %}
+                <tr class="hover:bg-surface-container-low/60 transition-colors group">
+                    <td class="px-gutter py-4 font-mono text-sm font-bold text-primary">{{ case.case_number }}</td>
+                    <td class="px-gutter py-4 font-semibold text-on-surface">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary text-sm">person</span>
+                            <span>{{ case.inmate.last_name }}, {{ case.inmate.first_name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-gutter py-4 text-on-surface-variant font-medium">
+                        {% if case.court %}
+                            {{ case.court.name }}
+                        {% else %}
+                            <span class="italic text-error">Unassigned Court</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-gutter py-4 text-on-surface max-w-md truncate" title="{{ case.charge_summary }}">
+                        {{ case.charge_summary }}
+                    </td>
+                    <td class="px-gutter py-4">
+                        {% if case.status == 'ONGOING' %}
+                            <span class="px-2.5 py-1 rounded-md bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs">Ongoing</span>
+                        {% elif case.status == 'DISMISSED' %}
+                            <span class="px-2.5 py-1 rounded-md bg-surface-variant text-on-surface-variant font-bold text-xs">Dismissed</span>
+                        {% else %}
+                            <span class="px-2.5 py-1 rounded-md bg-primary text-on-primary font-bold text-xs">{{ case.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-gutter py-4">
+                        {% if case.next_court_date %}
+                            <span class="inline-flex items-center gap-1 font-semibold text-xs text-primary">
+                                <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                {{ case.next_court_date|date:"b d, Y H:i" }}
+                            </span>
+                        {% else %}
+                            <span class="text-on-surface-variant italic text-xs">Unscheduled</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-gutter py-12 text-center text-on-surface-variant">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-4xl text-outline">folder_off</span>
+                            <p class="font-semibold text-base">No court cases registered for this facility.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

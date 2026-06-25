@@ -1,0 +1,88 @@
+{% extends 'custody/ncos_base.html' %}
+{% load static %}
+
+{% block content %}
+<header class="mb-stack-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-6">
+    <div>
+        <div class="flex items-center gap-2 mb-2">
+            <a href="{% url 'custody:ncos_facility_directory' %}" class="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                <span class="material-symbols-outlined text-sm">arrow_back</span> Facility Directory
+            </a>
+            <span class="text-outline-variant">/</span>
+            <span class="text-xs font-bold text-on-surface-variant">{{ facility.state }}</span>
+        </div>
+        <h2 class="font-display-lg text-display-lg font-bold text-on-surface">Showing System Alerts for {{ facility.name }}</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Overdue statutory compliance flags and escalation audits for this facility.</p>
+    </div>
+    <div class="flex items-center gap-2 bg-surface-container-low border border-outline-variant px-4 py-2 rounded-xl shadow-sm">
+        <span class="material-symbols-outlined text-error">notification_important</span>
+        <span class="font-label-md text-on-surface font-semibold">{{ alerts|length }} System Alert{{ alerts|length|pluralize }}</span>
+    </div>
+</header>
+
+<!-- Alerts Table -->
+<div class="bg-surface-container-lowest border border-outline-variant shadow-sm rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Alert Type</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Inmate</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Date Flagged</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Escalated</th>
+                    <th class="px-gutter py-4 font-label-md text-on-surface-variant uppercase tracking-wider">Resolution</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/60 font-body-md text-body-md">
+                {% for alert in alerts %}
+                <tr class="hover:bg-surface-container-low/60 transition-colors group">
+                    <td class="px-gutter py-4 font-bold text-error">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-base">warning</span>
+                            <span>{{ alert.alert_type }}</span>
+                        </div>
+                    </td>
+                    <td class="px-gutter py-4 font-semibold text-on-surface">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary text-sm">person</span>
+                            <span>{{ alert.inmate.last_name }}, {{ alert.inmate.first_name }} ({{ alert.inmate.inmate_number }})</span>
+                        </div>
+                    </td>
+                    <td class="px-gutter py-4 text-on-surface-variant font-medium">
+                        {{ alert.date_flagged|date:"b d, Y H:i" }}
+                    </td>
+                    <td class="px-gutter py-4">
+                        {% if alert.is_escalated %}
+                            <span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-bold text-xs">Yes</span>
+                        {% else %}
+                            <span class="px-2 py-0.5 rounded bg-surface-variant text-on-surface-variant text-xs">No</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-gutter py-4">
+                        {% if alert.is_resolved %}
+                            <span class="inline-flex items-center gap-1 font-bold text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                                <span class="material-symbols-outlined text-[14px]">check</span> Resolved by {{ alert.resolved_by.email|default:"System" }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1 font-bold text-xs text-error bg-error/10 px-2.5 py-1 rounded-md border border-error/20 animate-pulse">
+                                Active Action Required
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-gutter py-12 text-center text-on-surface-variant">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-4xl text-emerald-600">verified</span>
+                            <p class="font-semibold text-base text-on-surface">No active or historical alerts for this facility.</p>
+                            <span class="text-xs text-on-surface-variant">All statutory custody thresholds are fully compliant.</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
