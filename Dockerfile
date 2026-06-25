@@ -39,4 +39,4 @@ EXPOSE 8000
 
 # Run Gunicorn
 # Run migrations, seed the pitch data, and then start the server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py seed_trace_data && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py seed_trace_data && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
