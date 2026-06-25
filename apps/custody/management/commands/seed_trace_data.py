@@ -24,7 +24,7 @@ class Command(BaseCommand):
         Inmate.objects.all().delete()
         Facility.objects.all().delete()
         Court.objects.all().delete()
-        User.objects.exclude(is_superuser=True).delete()
+        User.objects.all().delete()
 
         # Task 2: Infrastructure Seeding
         facilities_data = [
@@ -52,6 +52,9 @@ class Command(BaseCommand):
 
         # Task 3: User Seeding (The Staff)
         self.stdout.write("Seeding Staff (Users)...")
+        admin_email = 'admin@trace.gov.ng'
+        User.objects.create_superuser(email=admin_email, password=password, role='SUPERADMIN')
+
         lawyer_email = 'lawyer@trace.gov.ng'
         User.objects.create_user(email=lawyer_email, password=password, role='LAWYER')
 
@@ -138,6 +141,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Successfully seeded TRACE database with Faker!"))
         self.stdout.write("\n=== Demo Credentials ===")
         self.stdout.write(f"Password for all: {password}")
+        self.stdout.write(f"Superuser: {admin_email}")
         self.stdout.write(f"Lawyer: {lawyer_email}")
         self.stdout.write(f"Commander: {demo_commander}")
         self.stdout.write(f"Officer: {demo_officer}")

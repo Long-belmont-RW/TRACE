@@ -6,3 +6,7 @@ django-two-factor-auth
 django-phonenumber-field[phonenumbers]
 django-otp
 weasyprint
+gunicorn
+psycopg2-binary
+dj-database-url
+whitenoise
