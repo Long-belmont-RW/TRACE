@@ -38,4 +38,5 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Run Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]
+# Run migrations, seed the pitch data, and then start the server
+CMD ["sh", "-c", "python manage.py migrate && python manage.py seed_trace_data && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
